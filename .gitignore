@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+# Giữ lại data/xsmb_2014_2026_cache.json và index.html.
+# Các file Excel lớn sinh tự động có thể bỏ qua trên Git để repo nhẹ hơn:
+data/*.xlsx

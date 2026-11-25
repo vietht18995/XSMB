@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XSMB Analytics Dashboard v2 — Phân Tích & Đánh Giá Mỗi Ngày</title>
+<style>
+  :root {
+    --bg: #0b1120;
+    --panel: #111827;
+    --panel2: #172033;
+    --border: #243047;
+    --text: #e5edf8;
+    --muted: #93a4be;
+    --accent: #38bdf8;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --purple: #a78bfa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(11, 17, 32, 0.94);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+  }
+  .header-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand h1 {
+    margin: 0;
+    font-size: 1.15rem;
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand .sub { font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--panel2);
+    color: var(--text);
+  }
+  .pill.accent { border-color: rgba(56,189,248,0.45); color: #7dd3fc; }
+  .pill.green { border-color: rgba(34,197,94,0.45); color: #86efac; }
+  .pill.amber { border-color: rgba(245,158,11,0.45); color: #fcd34d; }
+  .pill.red { border-color: rgba(239,68,68,0.5); color: #fca5a5; }
+  nav.tabs {
+    max-width: 1320px;
+    margin: 12px auto 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tab-btn {
+    cursor: pointer;
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: all .15s;
+  }
+  .tab-btn:hover { color: var(--text); border-color: var(--accent); }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #0284c7, #2563eb);
+    color: #fff;
+    border-color: transparent;
+  }
+  main {
+    max-width: 1320px;
+    margin: 18px auto 48px;
+    padding: 0 20px;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .grid { display: grid; gap: 16px; }
+  .g-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .g-2 { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+  .g-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  @media (max-width: 640px) {
+    .g-2, .g-3 { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .card h2 {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .card h3 { margin: 12px 0 8px; font-size: 0.9rem; color: #bae6fd; }
+  .kpi-val { font-size: 1.55rem; font-weight: 800; letter-spacing: 0.5px; }
+  .kpi-lbl { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-sub { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td {
+    text-align: left;
+    padding: 7px 8px;
+    border-bottom: 1px solid rgba(36, 48, 71, 0.7);
+    vertical-align: top;
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; }
+  tr:hover td { background: rgba(56, 189, 248, 0.04); }
+  .num-badge {
+    display: inline-block;
+    min-width: 32px;
+    text-align: center;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: rgba(56, 189, 248, 0.14);
+    color: #7dd3fc;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    font-variant-numeric: tabular-nums;
+  }
+  .num-badge.top { background: rgba(34, 197, 94, 0.18); color: #86efac; border-color: rgba(34, 197, 94, 0.45); }
+  .num-badge.trap { background: rgba(239, 68, 68, 0.18); color: #fca5a5; border-color: rgba(239, 68, 68, 0.45); }
+  .tag {
+    display: inline-block;
+    font-size: 0.73rem;
+    padding: 2px 6px;
+    margin: 2px 3px 2px 0;
+    border-radius: 5px;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: #cbd5e1;
+  }
+  .tag.warn { border-color: rgba(239,68,68,0.5); color: #fca5a5; background: rgba(239,68,68,0.1); }
+  .bar-wrap {
+    width: 100%;
+    height: 8px;
+    background: #1e293b;
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #38bdf8, #22c55e); }
+  .bar-fill.amber { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+  .input-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 150px; }
+  .field label { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+  input, select, textarea {
+    background: #0f172a;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.88rem;
+    font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  .btn {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-weight: 700;
+    font-size: 0.86rem;
+    background: #0284c7;
+    color: #fff;
+  }
+  .btn:hover { background: #0369a1; }
+  .btn.secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+  .btn.danger { background: rgba(239,68,68,0.18); color: #fca5a5; border: 1px solid rgba(239,68,68,0.45); }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .note-box {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    font-size: 0.82rem;
+    color: #fde68a;
+  }
+  .profit-pos { color: #4ade80; font-weight: 800; }
+  .profit-neg { color: #f87171; font-weight: 800; }
+  .scroll-x { overflow-x: auto; }
+  footer {
+    max-width: 1320px;
+    margin: 0 auto 30px;
+    padding: 0 20px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <h1>📊 XSMB Analytics Dashboard <span class="pill accent">v2 Cloud</span></h1>
+      <div class="sub" id="hdr-sub"></div>
+    </div>
+    <div class="pills" id="hdr-pills"></div>
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="overview">🎯 Tổng Quan & Chấm Điểm</button>
+    <button class="tab-btn" data-tab="bridges">🔗 Cầu 107 Vị Trí & Bạc Nhớ</button>
+    <button class="tab-btn" data-tab="gan">📉 Ma Trận Gan & 7 Nhà Đài</button>
+    <button class="tab-btn" data-tab="evaluate">✅ Tra Cứu & Tự Đánh Giá Mỗi Ngày</button>
+  </nav>
+</header>
+
+<main>
+  <!-- TAB 1: OVERVIEW -->
+  <section id="tab-overview" class="tab-panel active">
+    <div class="grid g-4" id="kpi-cards"></div>
+
+    <div class="grid g-2" style="margin-top:16px">
+      <div class="card">
+        <h2>🔥 Top 15 Ứng Viên Lô <span class="pill accent" id="lo-target-badge"></span></h2>
+        <div class="scroll-x">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Số</th><th>Điểm</th><th>Gan</th><th>15d/30d</th><th>Đài</th><th>Tín hiệu hội tụ</th></tr>
+            </thead>
+            <tbody id="tbl-top-lo"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>💎 Top 16 Ứng Viên Đề <span class="pill green" id="de-target-badge"></span></h2>
+        <div class="scroll-x">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Số</th><th>Điểm</th><th>Tổng/Bộ</th><th>Gan Đề</th><th>Tín hiệu hội tụ</th></tr>
+            </thead>
+            <tbody id="tbl-top-de"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g-3" style="margin-top:16px">
+      <div class="card">
+        <h2>🧭 Khung Càng & Tổng Trọng Tâm</h2>
+        <div id="quick-tong-cang"></div>
+      </div>
+      <div class="card">
+        <h2>📐 Pascal & Cầu Kẹp Kỳ Gần Nhất</h2>
+        <div id="quick-pascal"></div>
+      </div>
+      <div class="card">
+        <h2>⚠️ Cảnh Báo Bẫy Gan & Nhịp Đề 30 Kỳ</h2>
+        <div id="quick-traps"></div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>Lưu ý xác suất thực chứng (Kỷ luật v2):</strong>
+      Nền ngẫu nhiên năm <span id="note-year"></span> đạt <strong>BTL <span id="note-btl"></span>%</strong> và <strong>STL <span id="note-stl"></span>%</strong>; Đề dàn 10 số = <strong>10%</strong>; 3 Càng 1 số = <strong>0.1%</strong>.
+      Hệ thống chỉ tổng hợp tín hiệu thống kê lịch sử — không cam kết chắc chắn thắng và luôn trừ điểm cảnh báo với bẫy Lô gan ≥ 12 ngày, Đề đại gan ≥ 280 ngày.
+    </div>
+  </section>
+
+  <!-- TAB 2: BRIDGES & BAC NHO -->
+  <section id="tab-bridges" class="tab-panel">
+    <div class="grid g-2" id="cam-rebound-container"></div>
+
+    <div class="grid g-2" style="margin-top:16px">
+      <div class="card">
+        <h2>⚡ Top Cầu STL Thông ≥ 7 Ngày (107 Vị Trí)</h2>
+        <div class="scroll-x">
+          <table>
+            <thead><tr><th>Cặp STL</th><th>Thông</th><th>30d</th><th>Năm nay</th><th>Vị trí ghép</th></tr></thead>
+            <tbody id="tbl-stl-streak"></tbody>
+          </table>
+        </div>
+        <h3>🏆 Top Cầu STL Thông ≥ 5 Ngày & Tỷ Lệ Năm Cao Nhất</h3>
+        <div class="scroll-x">
+          <table>
+            <thead><tr><th>Cặp STL</th><th>Năm nay</th><th>Thông</th><th>Vị trí ghép</th></tr></thead>
+            <tbody id="tbl-stl-rate"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🎯 Top Cầu BTL Thông ≥ 5 Ngày</h2>
+        <div class="scroll-x">
+          <table>
+            <thead><tr><th>BTL</th><th>Thông</th><th>30d</th><th>Năm nay</th><th>Vị trí</th></tr></thead>
+            <tbody id="tbl-btl"></tbody>
+          </table>
+        </div>
+        <h3>🎲 Cầu Chạm (≥4d) · Cầu Tổng (≥3d) · Cầu Càng (≥3d)</h3>
+        <div id="box-de-bridges"></div>
+      </div>
+    </div>
+
+    <div class="grid g-2" style="margin-top:16px">
+      <div class="card">
+        <h2>🏛️ Hồ Sơ Nhà Đài Mục Tiêu <span class="pill accent" id="wd-title-badge"></span></h2>
+        <div id="box-weekday-profile"></div>
+      </div>
+      <div class="card">
+        <h2>🧠 Bạc Nhớ Sau Đề <span class="pill amber" id="bn-de-badge"></span></h2>
+        <div id="box-bacnho"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: GAN & 7 WEEKDAYS -->
+  <section id="tab-gan" class="tab-panel">
+    <div class="grid g-2">
+      <div class="card">
+        <h2>📊 Gan Tổng Đề vs Kỷ Lục Max 13 Năm</h2>
+        <div class="scroll-x">
+          <table>
+            <thead><tr><th>Tổng</th><th>Hiện tại</th><th>Max 13 năm</th><th>Tỷ lệ so Max</th><th>Gần nhất</th></tr></thead>
+            <tbody id="tbl-gan-tong"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>📊 Gan Càng Đề vs Kỷ Lục Max 13 Năm</h2>
+        <div class="scroll-x">
+          <table>
+            <thead><tr><th>Càng</th><th>Hiện tại</th><th>Max 13 năm</th><th>Tỷ lệ so Max</th><th>Gần nhất</th></tr></thead>
+            <tbody id="tbl-gan-cang"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g-3" style="margin-top:16px">
+      <div class="card">
+        <h2>🚨 Top 15 Đề Gan Sâu Nhất</h2>
+        <table>
+          <thead><tr><th>Đề</th><th>Số ngày</th><th>Lần cuối</th></tr></thead>
+          <tbody id="tbl-de-gan15"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>🧊 Top 12 Lô Gan & Đầu/Đuôi Đề Gan</h2>
+        <table>
+          <thead><tr><th>Lô</th><th>Gan</th><th>Lần cuối</th></tr></thead>
+          <tbody id="tbl-lo-gan12"></tbody>
+        </table>
+        <h3>Đầu / Đuôi Đề Gan Nhất</h3>
+        <div id="box-dau-duoi-gan"></div>
+      </div>
+      <div class="card">
+        <h2>🔥 Top 12 Lô Nóng (15 Ngày & 30 Ngày)</h2>
+        <div id="box-lo-hot"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>📅 Ma Trận 7 Nhà Đài Theo Thứ Trong Tuần (Năm <span id="wm-year"></span>)</h2>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Thứ & Nhà Đài</th><th>Số kỳ</th><th>Top 3 Càng</th><th>Top 3 Tổng</th><th>Top 5 Lô Nổi Bật</th></tr></thead>
+          <tbody id="tbl-weekday-matrix"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: LOOKUP & DAILY EVALUATOR -->
+  <section id="tab-evaluate" class="tab-panel">
+    <div class="card">
+      <h2>🔎 Tra Cứu & Chấm Điểm Tức Thì Bất Kỳ Số Nào (00–99)</h2>
+      <div class="input-row">
+        <div class="field">
+          <label for="lookup-input">Nhập các số cần kiểm tra (cách nhau bởi dấu phẩy hoặc khoảng trắng, vd: 06 42 60 98)</label>
+          <input id="lookup-input" type="text" placeholder="Ví dụ: 06, 42, 60, 32, 98" />
+        </div>
+        <button class="btn" id="btn-lookup">Kiểm tra điểm</button>
+      </div>
+      <div id="lookup-results"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>✅ Công Cụ Tự Đánh Giá & Đối Soát Dàn Chốt Hằng Ngày</h2>
+      <div class="input-row">
+        <div class="field" style="max-width:260px">
+          <label for="eval-draw-select">Chọn kỳ quay để đối soát (30 kỳ gần nhất)</label>
+          <select id="eval-draw-select"></select>
+        </div>
+        <div class="field">
+          <label for="eval-lo">Dàn Lô (vd: 06 60 32)</label>
+          <input id="eval-lo" type="text" placeholder="06 60 32" />
+        </div>
+        <div class="field" style="max-width:130px">
+          <label for="eval-lo-pts">Điểm/con Lô</label>
+          <input id="eval-lo-pts" type="number" min="0" value="5" />
+        </div>
+        <div class="field">
+          <label for="eval-de">Dàn Đề (vd: 42 60 08)</label>
+          <input id="eval-de" type="text" placeholder="42 60 08" />
+        </div>
+        <div class="field" style="max-width:130px">
+          <label for="eval-de-k">Tiền Đề (k/con)</label>
+          <input id="eval-de-k" type="number" min="0" value="10" />
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="field">
+          <label for="eval-xien">Xiên 2 (vd: 06-60, 32-02)</label>
+          <input id="eval-xien" type="text" placeholder="06-60, 32-02" />
+        </div>
+        <div class="field" style="max-width:140px">
+          <label for="eval-xien-k">Tiền X2 (k/cặp)</label>
+          <input id="eval-xien-k" type="number" min="0" value="20" />
+        </div>
+        <div class="field">
+          <label for="eval-3c">3 Càng (vd: 142 560 908)</label>
+          <input id="eval-3c" type="text" placeholder="142 560 908" />
+        </div>
+        <div class="field" style="max-width:140px">
+          <label for="eval-3c-k">Tiền 3C (k/số)</label>
+          <input id="eval-3c-k" type="number" min="0" value="5" />
+        </div>
+        <button class="btn" id="btn-eval-run">Đối soát & Tính lãi/lỗ</button>
+        <button class="btn secondary" id="btn-eval-save">Lưu vào Nhật ký</button>
+      </div>
+      <div id="eval-output"></div>
+
+      <h3>📒 Nhật Ký Tự Đánh Giá Hiệu Suất (Lưu trên trình duyệt — localStorage)</h3>
+      <div class="input-row">
+        <button class="btn secondary" id="btn-export-log">Xuất JSON nhật ký</button>
+        <button class="btn danger" id="btn-clear-log">Xóa nhật ký</button>
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Kỳ đối soát</th><th>ĐB</th><th>Lô trúng</th><th>Đề / 3C</th><th>Xiên 2</th><th>Vốn (k)</th><th>Thu (k)</th><th>Lãi/Lỗ (k)</th></tr></thead>
+          <tbody id="tbl-eval-log"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>📜 Lịch Sử 30 Kỳ Quay Gần Nhất</h2>
+      <div class="input-row">
+        <div class="field" style="max-width:300px">
+          <label for="hist-filter">Lọc theo ngày hoặc số (vd: 89 hoặc 24/11)</label>
+          <input id="hist-filter" type="text" placeholder="Nhập số hoặc ngày..." />
+        </div>
+      </div>
+      <div class="scroll-x">
+        <table>
+          <thead><tr><th>Ngày</th><th>Thứ / Đài</th><th>ĐB</th><th>Đề</th><th>Càng</th><th>Tổng</th><th>G1</th><th>27 Số Lô Tô</th></tr></thead>
+          <tbody id="tbl-history"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  XSMB Analytics Dashboard v2 · Dữ liệu chuẩn hóa từ <span class="mono">data/xsmb_2014_2026_cache.json</span> · Không lưu thông tin cá nhân · Sinh tự động bằng <span class="mono">scripts/build_dashboard.py</span>
+</footer>
+
+<script>
+const DATA = {"meta": {"generated_at": "25/11/2026 10:10 UTC+7", "total_draws": 4637, "year": "2026", "year_draws": 324, "latest_date": "24/11/2026", "target_date": "25/11/2026", "target_weekday": "Thứ Tư", "target_station": "Bắc Ninh", "baseline_btl": 23.75, "baseline_stl": 41.86, "avg_uniq": 23.75, "pascal_hits": 150, "pascal_total": 323, "pascal_pct": 46.44}, "latest": {"date": "24/11/2026", "weekday": "Thứ 3", "station": "Quảng Ninh", "db": "17489", "de": "89", "cang": "4", "tong": "7", "bo": "34", "p1": "26330", "multi_hits": [{"num": "49", "cnt": 2}, {"num": "53", "cnt": 2}], "cam_dau": [], "cam_duoi": ["2", "6"], "pascal_dbg1": "41", "stl_pascal_dbg1": "14-41", "pascal_db": "22", "stl_pascal_db": "22", "keps": [{"pos": "G3.1", "raw": "70775", "pair": "07-70"}, {"pos": "G3.4", "raw": "58278", "pair": "27-72"}, {"pos": "G3.6", "raw": "20923", "pair": "09-90"}], "loto": ["89", "30", "15", "85", "75", "84", "95", "78", "99", "23", "88", "53", "83", "00", "11", "79", "65", "49", "67", "53", "49", "19", "24", "98", "27", "40", "63"]}, "cam_rebound": [{"kind": "Đuôi", "digit": "2", "frames": [{"label": "2014–2026", "n": 242, "hit_days": 225, "avg": 2.7, "top_nums": [{"num": "72", "cnt": 64, "pct": 26.4}, {"num": "02", "cnt": 63, "pct": 26.0}, {"num": "82", "cnt": 62, "pct": 25.6}, {"num": "52", "cnt": 61, "pct": 25.2}, {"num": "92", "cnt": 61, "pct": 25.2}], "top_stl": [{"pair": "26-62", "cnt": 111, "pct": 45.9}, {"pair": "02-20", "cnt": 105, "pct": 43.4}, {"pair": "27-72", "cnt": 104, "pct": 43.0}, {"pair": "28-82", "cnt": 102, "pct": 42.1}, {"pair": "29-92", "cnt": 102, "pct": 42.1}]}, {"label": "Riêng 2026", "n": 19, "hit_days": 17, "avg": 2.84, "top_nums": [{"num": "72", "cnt": 8, "pct": 42.1}, {"num": "02", "cnt": 6, "pct": 31.6}, {"num": "32", "cnt": 6, "pct": 31.6}, {"num": "62", "cnt": 6, "pct": 31.6}, {"num": "82", "cnt": 5, "pct": 26.3}], "top_stl": [{"pair": "02-20", "cnt": 11, "pct": 57.9}, {"pair": "27-72", "cnt": 10, "pct": 52.6}, {"pair": "28-82", "cnt": 9, "pct": 47.4}, {"pair": "26-62", "cnt": 9, "pct": 47.4}, {"pair": "12-21", "cnt": 8, "pct": 42.1}]}, {"label": "-> Thứ Tư", "n": 33, "hit_days": 29, "avg": 2.76, "top_nums": [{"num": "02", "cnt": 13, "pct": 39.4}, {"num": "72", "cnt": 11, "pct": 33.3}, {"num": "62", "cnt": 9, "pct": 27.3}, {"num": "42", "cnt": 8, "pct": 24.2}, {"num": "12", "cnt": 7, "pct": 21.2}], "top_stl": [{"pair": "02-20", "cnt": 16, "pct": 48.5}, {"pair": "29-92", "cnt": 15, "pct": 45.5}, {"pair": "24-42", "cnt": 14, "pct": 42.4}, {"pair": "27-72", "cnt": 14, "pct": 42.4}, {"pair": "12-21", "cnt": 12, "pct": 36.4}]}]}, {"kind": "Đuôi", "digit": "6", "frames": [{"label": "2014–2026", "n": 274, "hit_days": 258, "avg": 2.69, "top_nums": [{"num": "76", "cnt": 79, "pct": 28.8}, {"num": "96", "cnt": 76, "pct": 27.7}, {"num": "06", "cnt": 66, "pct": 24.1}, {"num": "16", "cnt": 65, "pct": 23.7}, {"num": "66", "cnt": 65, "pct": 23.7}], "top_stl": [{"pair": "69-96", "cnt": 130, "pct": 47.4}, {"pair": "67-76", "cnt": 130, "pct": 47.4}, {"pair": "06-60", "cnt": 118, "pct": 43.1}, {"pair": "16-61", "cnt": 118, "pct": 43.1}, {"pair": "46-64", "cnt": 116, "pct": 42.3}]}, {"label": "Riêng 2026", "n": 20, "hit_days": 19, "avg": 2.65, "top_nums": [{"num": "06", "cnt": 9, "pct": 45.0}, {"num": "66", "cnt": 7, "pct": 35.0}, {"num": "16", "cnt": 5, "pct": 25.0}, {"num": "46", "cnt": 5, "pct": 25.0}, {"num": "96", "cnt": 5, "pct": 25.0}], "top_stl": [{"pair": "06-60", "cnt": 13, "pct": 65.0}, {"pair": "26-62", "cnt": 10, "pct": 50.0}, {"pair": "46-64", "cnt": 10, "pct": 50.0}, {"pair": "68-86", "cnt": 9, "pct": 45.0}, {"pair": "69-96", "cnt": 9, "pct": 45.0}]}, {"label": "-> Thứ Tư", "n": 32, "hit_days": 30, "avg": 2.56, "top_nums": [{"num": "76", "cnt": 12, "pct": 37.5}, {"num": "06", "cnt": 8, "pct": 25.0}, {"num": "56", "cnt": 8, "pct": 25.0}, {"num": "66", "cnt": 8, "pct": 25.0}, {"num": "16", "cnt": 7, "pct": 21.9}], "top_stl": [{"pair": "67-76", "cnt": 18, "pct": 56.2}, {"pair": "06-60", "cnt": 15, "pct": 46.9}, {"pair": "69-96", "cnt": 15, "pct": 46.9}, {"pair": "56-65", "cnt": 14, "pct": 43.8}, {"pair": "36-63", "cnt": 14, "pct": 43.8}]}]}], "bridges": {"stl_streak": [{"pair": "39-93", "streak": 10, "h_yr": 129, "yr_pct": 39.9, "h30": 16, "pos": "G3.2[0] + G4.2[0]"}, {"pair": "58-85", "streak": 8, "h_yr": 140, "yr_pct": 43.3, "h30": 16, "pos": "G4.3[2] + G5.3[3]"}, {"pair": "29-92", "streak": 8, "h_yr": 130, "yr_pct": 40.2, "h30": 18, "pos": "G2.1[1] + ĐB[4]"}, {"pair": "06-60", "streak": 8, "h_yr": 123, "yr_pct": 38.1, "h30": 16, "pos": "G3.5[0] + G7.4[0]"}, {"pair": "39-93", "streak": 7, "h_yr": 142, "yr_pct": 44.0, "h30": 21, "pos": "G3.6[4] + ĐB[4]"}, {"pair": "16-61", "streak": 7, "h_yr": 122, "yr_pct": 37.8, "h30": 14, "pos": "G2.2[1] + G6.2[1]"}], "stl_rate": [{"pair": "01-10", "h_yr": 165, "yr_pct": 51.1, "streak": 5, "pos": "G2.1[3] + G3.2[1]"}, {"pair": "78-87", "h_yr": 149, "yr_pct": 46.1, "streak": 5, "pos": "G3.2[3] + G5.3[0]"}], "btl": [{"num": "06", "streak": 6, "h_yr": 73, "yr_pct": 22.6, "h30": 9, "pos": "G3.5[0] → G7.4[0]"}, {"num": "00", "streak": 5, "h_yr": 84, "yr_pct": 26.0, "h30": 11, "pos": "G3.2[1] → G3.1[1]"}, {"num": "32", "streak": 5, "h_yr": 79, "yr_pct": 24.5, "h30": 8, "pos": "G5.1[0] → G6.2[0]"}, {"num": "00", "streak": 5, "h_yr": 72, "yr_pct": 22.3, "h30": 10, "pos": "G3.2[1] → G1[4]"}], "cham": [{"digit": "0", "streak": 5, "h30": 10, "h_yr": 64, "pos": "(G2.2[2] + G7.4[0]) % 10"}, {"digit": "4", "streak": 4, "h30": 11, "h_yr": 67, "pos": "(G1[2] + ĐB[0]) % 10"}, {"digit": "2", "streak": 4, "h30": 10, "h_yr": 76, "pos": "(G3.2[1] + G3.4[2]) % 10"}, {"digit": "4", "streak": 4, "h30": 10, "h_yr": 69, "pos": "(G3.3[3] + G3.4[0]) % 10"}, {"digit": "1", "streak": 4, "h30": 10, "h_yr": 61, "pos": "(G3.1[0] + G3.3[1]) % 10"}, {"digit": "4", "streak": 4, "h30": 9, "h_yr": 65, "pos": "(G4.4[3] + G6.3[2]) % 10"}, {"digit": "6", "streak": 4, "h30": 9, "h_yr": 63, "pos": "(G5.4[0] + G5.4[3]) % 10"}, {"digit": "5", "streak": 4, "h30": 8, "h_yr": 64, "pos": "(G5.1[3] + G5.4[2]) % 10"}, {"digit": "8", "streak": 4, "h30": 8, "h_yr": 59, "pos": "(G1[4] + G3.4[1]) % 10"}, {"digit": "2", "streak": 4, "h30": 7, "h_yr": 71, "pos": "(G5.3[0] + G5.6[2]) % 10"}, {"digit": "2", "streak": 4, "h30": 5, "h_yr": 57, "pos": "(G3.2[0] + G3.5[3]) % 10"}], "cham_dist": [["4", 3], ["2", 3], ["0", 1], ["1", 1], ["6", 1], ["5", 1], ["8", 1]], "tong": [{"digit": "5", "streak": 3, "h30": 8, "h_yr": 43, "pos": "(G2.1[1] + G3.3[0]) % 10"}, {"digit": "6", "streak": 3, "h30": 6, "h_yr": 43, "pos": "(G3.3[0] + G7.4[1]) % 10"}, {"digit": "2", "streak": 3, "h30": 5, "h_yr": 32, "pos": "(G2.1[4] + ĐB[1]) % 10"}, {"digit": "3", "streak": 3, "h30": 5, "h_yr": 31, "pos": "(G3.3[1] + ĐB[4]) % 10"}, {"digit": "0", "streak": 3, "h30": 5, "h_yr": 29, "pos": "(G3.5[1] + G5.5[1]) % 10"}, {"digit": "1", "streak": 3, "h30": 4, "h_yr": 36, "pos": "(G2.1[3] + G3.1[1]) % 10"}], "cang": [{"digit": "8", "streak": 3, "h30": 8, "h_yr": 37, "pos": "(G3.1[1] + ĐB[3]) % 10"}, {"digit": "9", "streak": 3, "h30": 7, "h_yr": 40, "pos": "(G1[3] + G5.4[1]) % 10"}, {"digit": "2", "streak": 3, "h30": 5, "h_yr": 42, "pos": "(G4.3[0] + G5.5[2]) % 10"}, {"digit": "9", "streak": 3, "h30": 5, "h_yr": 41, "pos": "(G3.1[2] + G6.2[0]) % 10"}, {"digit": "0", "streak": 3, "h30": 5, "h_yr": 30, "pos": "(G5.4[1] + ĐB[2]) % 10"}, {"digit": "3", "streak": 3, "h30": 4, "h_yr": 26, "pos": "(G5.1[1] + G7.1[0]) % 10"}]}, "bacnho": [{"label": "2014–2026", "n": 52, "top_lo": [{"num": "91", "cnt": 20, "pct": 38.5}, {"num": "82", "cnt": 18, "pct": 34.6}, {"num": "73", "cnt": 18, "pct": 34.6}, {"num": "13", "cnt": 18, "pct": 34.6}, {"num": "08", "cnt": 18, "pct": 34.6}, {"num": "89", "cnt": 17, "pct": 32.7}, {"num": "72", "cnt": 17, "pct": 32.7}, {"num": "95", "cnt": 17, "pct": 32.7}], "top_stl": [{"pair": "37-73", "cnt": 28, "pct": 53.8}, {"pair": "15-51", "cnt": 28, "pct": 53.8}, {"pair": "06-60", "cnt": 27, "pct": 51.9}, {"pair": "19-91", "cnt": 27, "pct": 51.9}, {"pair": "59-95", "cnt": 27, "pct": 51.9}, {"pair": "23-32", "cnt": 26, "pct": 50.0}], "dau": [["1", 9], ["7", 9], ["3", 6], ["0", 6], ["5", 5]], "duoi": [["2", 8], ["8", 8], ["7", 6], ["0", 6], ["1", 5]], "tong": [["8", 7], ["3", 7], ["5", 7], ["6", 6], ["4", 6]], "bo": [["03", 9], ["13", 6], ["24", 6], ["23", 6], ["12", 5]], "cang": [["8", 9], ["1", 7], ["6", 7], ["0", 5], ["3", 5]]}, {"label": "2023–2026", "n": 13, "top_lo": [{"num": "13", "cnt": 7, "pct": 53.8}, {"num": "95", "cnt": 7, "pct": 53.8}, {"num": "91", "cnt": 6, "pct": 46.2}, {"num": "69", "cnt": 6, "pct": 46.2}, {"num": "27", "cnt": 5, "pct": 38.5}, {"num": "44", "cnt": 5, "pct": 38.5}, {"num": "23", "cnt": 5, "pct": 38.5}, {"num": "22", "cnt": 5, "pct": 38.5}], "top_stl": [{"pair": "59-95", "cnt": 11, "pct": 84.6}, {"pair": "26-62", "cnt": 9, "pct": 69.2}, {"pair": "69-96", "cnt": 8, "pct": 61.5}, {"pair": "06-60", "cnt": 8, "pct": 61.5}, {"pair": "34-43", "cnt": 8, "pct": 61.5}, {"pair": "13-31", "cnt": 8, "pct": 61.5}], "dau": [["7", 4], ["1", 4], ["0", 2], ["6", 2], ["8", 1]], "duoi": [["0", 2], ["3", 2], ["4", 2], ["8", 2], ["7", 1]], "tong": [["4", 3], ["0", 2], ["8", 2], ["9", 2], ["7", 1]], "bo": [["13", 3], ["12", 2], ["02", 1], ["23", 1], ["22", 1]], "cang": [["9", 2], ["8", 2], ["3", 2], ["0", 2], ["1", 2]]}], "weekday": {"name": "Thứ Tư", "station": "Bắc Ninh", "n": 45, "top_lo": [{"num": "48", "cnt": 17, "pct": 37.8}, {"num": "95", "cnt": 16, "pct": 35.6}, {"num": "60", "cnt": 16, "pct": 35.6}, {"num": "02", "cnt": 16, "pct": 35.6}, {"num": "20", "cnt": 16, "pct": 35.6}, {"num": "69", "cnt": 15, "pct": 33.3}, {"num": "88", "cnt": 15, "pct": 33.3}, {"num": "42", "cnt": 15, "pct": 33.3}, {"num": "90", "cnt": 15, "pct": 33.3}, {"num": "13", "cnt": 15, "pct": 33.3}], "top_mult": [["13", 5], ["45", 4], ["46", 4], ["87", 4], ["21", 4], ["79", 3], ["26", 3], ["02", 3]], "top_stl": [{"pair": "02-20", "cnt": 28, "pct": 62.2}, {"pair": "24-42", "cnt": 24, "pct": 53.3}, {"pair": "09-90", "cnt": 24, "pct": 53.3}, {"pair": "59-95", "cnt": 24, "pct": 53.3}, {"pair": "05-50", "cnt": 23, "pct": 51.1}, {"pair": "89-98", "cnt": 22, "pct": 48.9}, {"pair": "48-84", "cnt": 22, "pct": 48.9}, {"pair": "12-21", "cnt": 22, "pct": 48.9}], "top_xien": [{"pair": "42-60", "cnt": 9, "pct": 20.0}, {"pair": "42-50", "cnt": 8, "pct": 17.8}, {"pair": "30-48", "cnt": 8, "pct": 17.8}, {"pair": "48-69", "cnt": 8, "pct": 17.8}, {"pair": "48-90", "cnt": 8, "pct": 17.8}, {"pair": "88-90", "cnt": 8, "pct": 17.8}, {"pair": "02-48", "cnt": 8, "pct": 17.8}, {"pair": "02-66", "cnt": 8, "pct": 17.8}], "dau": [["8", 7], ["1", 7], ["6", 7], ["4", 7], ["5", 6], ["0", 4], ["2", 3], ["3", 2], ["9", 1], ["7", 1]], "duoi": [["9", 7], ["8", 7], ["6", 6], ["3", 6], ["4", 5], ["1", 4], ["7", 3], ["2", 3], ["0", 2], ["5", 2]], "tong": [["6", 8], ["8", 6], ["4", 6], ["5", 5], ["7", 4], ["1", 4], ["9", 4], ["0", 3], ["2", 3], ["3", 2]], "bo": [["13", 6], ["14", 6], ["34", 4], ["12", 4], ["24", 4], ["33", 4], ["01", 4], ["04", 4]], "cang": [["1", 9], ["3", 6], ["5", 6], ["6", 5], ["2", 5], ["9", 4], ["4", 3], ["7", 3], ["8", 2], ["0", 2]]}, "gan": {"tong": [{"digit": "0", "cur": 20, "max13": 67, "last_date": "04/11/2026", "last_db": "53046"}, {"digit": "8", "cur": 16, "max13": 59, "last_date": "08/11/2026", "last_db": "38926"}, {"digit": "9", "cur": 12, "max13": 53, "last_date": "12/11/2026", "last_db": "43454"}, {"digit": "2", "cur": 10, "max13": 64, "last_date": "14/11/2026", "last_db": "20893"}, {"digit": "3", "cur": 8, "max13": 67, "last_date": "16/11/2026", "last_db": "97403"}, {"digit": "1", "cur": 7, "max13": 63, "last_date": "17/11/2026", "last_db": "29865"}, {"digit": "5", "cur": 5, "max13": 58, "last_date": "19/11/2026", "last_db": "15178"}, {"digit": "6", "cur": 4, "max13": 66, "last_date": "20/11/2026", "last_db": "10760"}, {"digit": "4", "cur": 1, "max13": 56, "last_date": "23/11/2026", "last_db": "94495"}, {"digit": "7", "cur": 0, "max13": 58, "last_date": "24/11/2026", "last_db": "17489"}], "cang": [{"digit": "5", "cur": 19, "max13": 62, "last_date": "05/11/2026", "last_db": "24502"}, {"digit": "0", "cur": 17, "max13": 59, "last_date": "07/11/2026", "last_db": "95014"}, {"digit": "3", "cur": 15, "max13": 56, "last_date": "09/11/2026", "last_db": "03372"}, {"digit": "6", "cur": 14, "max13": 63, "last_date": "10/11/2026", "last_db": "73683"}, {"digit": "9", "cur": 6, "max13": 69, "last_date": "18/11/2026", "last_db": "21915"}, {"digit": "1", "cur": 5, "max13": 50, "last_date": "19/11/2026", "last_db": "15178"}, {"digit": "7", "cur": 4, "max13": 63, "last_date": "20/11/2026", "last_db": "10760"}, {"digit": "8", "cur": 3, "max13": 48, "last_date": "21/11/2026", "last_db": "06804"}, {"digit": "2", "cur": 2, "max13": 78, "last_date": "22/11/2026", "last_db": "92286"}, {"digit": "4", "cur": 0, "max13": 80, "last_date": "24/11/2026", "last_db": "17489"}], "dau": [{"digit": "3", "cur": 31, "max13": 59, "last_date": "24/10/2026"}, {"digit": "4", "cur": 20, "max13": 66, "last_date": "04/11/2026"}, {"digit": "5", "cur": 11, "max13": 58, "last_date": "13/11/2026"}, {"digit": "2", "cur": 9, "max13": 67, "last_date": "15/11/2026"}, {"digit": "1", "cur": 6, "max13": 70, "last_date": "18/11/2026"}, {"digit": "7", "cur": 5, "max13": 41, "last_date": "19/11/2026"}, {"digit": "6", "cur": 4, "max13": 56, "last_date": "20/11/2026"}, {"digit": "0", "cur": 3, "max13": 61, "last_date": "21/11/2026"}, {"digit": "9", "cur": 1, "max13": 53, "last_date": "23/11/2026"}, {"digit": "8", "cur": 0, "max13": 56, "last_date": "24/11/2026"}], "duoi": [{"digit": "7", "cur": 18, "max13": 61, "last_date": "06/11/2026"}, {"digit": "2", "cur": 15, "max13": 78, "last_date": "09/11/2026"}, {"digit": "1", "cur": 11, "max13": 58, "last_date": "13/11/2026"}, {"digit": "3", "cur": 8, "max13": 60, "last_date": "16/11/2026"}, {"digit": "8", "cur": 5, "max13": 70, "last_date": "19/11/2026"}, {"digit": "0", "cur": 4, "max13": 57, "last_date": "20/11/2026"}, {"digit": "4", "cur": 3, "max13": 48, "last_date": "21/11/2026"}, {"digit": "6", "cur": 2, "max13": 56, "last_date": "22/11/2026"}, {"digit": "5", "cur": 1, "max13": 61, "last_date": "23/11/2026"}, {"digit": "9", "cur": 0, "max13": 71, "last_date": "24/11/2026"}], "de_top15": [{"num": "98", "cur": 641, "last_date": "17/02/2025"}, {"num": "58", "cur": 546, "last_date": "23/05/2025"}, {"num": "31", "cur": 436, "last_date": "10/09/2025"}, {"num": "07", "cur": 432, "last_date": "14/09/2025"}, {"num": "27", "cur": 311, "last_date": "13/01/2026"}, {"num": "62", "cur": 300, "last_date": "24/01/2026"}, {"num": "74", "cur": 298, "last_date": "26/01/2026"}, {"num": "30", "cur": 279, "last_date": "14/02/2026"}, {"num": "49", "cur": 263, "last_date": "06/03/2026"}, {"num": "24", "cur": 249, "last_date": "20/03/2026"}, {"num": "82", "cur": 231, "last_date": "07/04/2026"}, {"num": "20", "cur": 228, "last_date": "10/04/2026"}, {"num": "48", "cur": 216, "last_date": "22/04/2026"}, {"num": "76", "cur": 214, "last_date": "24/04/2026"}, {"num": "64", "cur": 205, "last_date": "03/05/2026"}], "warm_30": {"avg": 106.6, "le50": 9, "le100": 19, "ge200": 5}, "lo_top12": [{"num": "37", "cur": 22, "last_date": "02/11/2026"}, {"num": "55", "cur": 21, "last_date": "03/11/2026"}, {"num": "18", "cur": 14, "last_date": "10/11/2026"}, {"num": "81", "cur": 12, "last_date": "12/11/2026"}, {"num": "16", "cur": 10, "last_date": "14/11/2026"}, {"num": "77", "cur": 10, "last_date": "14/11/2026"}, {"num": "90", "cur": 10, "last_date": "14/11/2026"}, {"num": "38", "cur": 9, "last_date": "15/11/2026"}, {"num": "72", "cur": 9, "last_date": "15/11/2026"}, {"num": "80", "cur": 9, "last_date": "15/11/2026"}, {"num": "93", "cur": 9, "last_date": "15/11/2026"}, {"num": "03", "cur": 8, "last_date": "16/11/2026"}], "lo_hot15": [["92", 9], ["00", 9], ["14", 9], ["06", 8], ["12", 8], ["32", 8], ["45", 8], ["89", 7], ["23", 7], ["68", 7], ["29", 7], ["60", 7]], "lo_hot30": [["06", 16], ["34", 15], ["17", 15], ["14", 15], ["52", 14], ["04", 13], ["92", 13], ["24", 13], ["00", 13], ["26", 12], ["23", 12], ["94", 12]]}, "scores_lo_all": [{"num": "06", "score": 8.5, "gan": 3, "c15": 8, "c30": 16, "c_wd": 10, "wd_n": 45, "trap": false, "tags": ["BTL cầu 6d (22.6%)", "STL cầu 8d", "Bật Đuôi câm 6", "Nhịp chín (3d)", "Nóng 30d (16x)"]}, {"num": "91", "score": 8.0, "gan": 2, "c15": 7, "c30": 10, "c_wd": 14, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (31.1%)", "Sau 89 13y (38.5%)", "Sau 89 23+ (46.2%)", "Nhịp chín (2d)", "Nóng 30d (10x)"]}, {"num": "13", "score": 7.0, "gan": 2, "c15": 1, "c30": 6, "c_wd": 15, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (33.3%)", "Sau 89 13y (34.6%)", "Sau 89 23+ (53.8%)", "Nhịp chín (2d)"]}, {"num": "60", "score": 6.5, "gan": 4, "c15": 7, "c30": 9, "c_wd": 16, "wd_n": 45, "trap": false, "tags": ["Vua Thứ Tư 16/45 (35.6%)", "STL cầu 8d", "Nhịp chín (4d)"]}, {"num": "32", "score": 6.5, "gan": 2, "c15": 8, "c30": 12, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["BTL cầu 5d (24.5%)", "Bật Đuôi câm 2", "Nhịp chín (2d)", "Nóng 30d (12x)"]}, {"num": "02", "score": 6.0, "gan": 4, "c15": 2, "c30": 4, "c_wd": 16, "wd_n": 45, "trap": false, "tags": ["Vua Thứ Tư 16/45 (35.6%)", "Bật Đuôi câm 2", "Nhịp chín (4d)"]}, {"num": "69", "score": 6.0, "gan": 2, "c15": 5, "c30": 11, "c_wd": 15, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (33.3%)", "Sau 89 23+ (46.2%)", "Nhịp chín (2d)", "Nóng 30d (11x)"]}, {"num": "92", "score": 6.0, "gan": 2, "c15": 9, "c30": 13, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["STL cầu 8d", "Bật Đuôi câm 2", "Nhịp chín (2d)", "Nóng 30d (13x)"]}, {"num": "48", "score": 5.5, "gan": 2, "c15": 7, "c30": 11, "c_wd": 17, "wd_n": 45, "trap": false, "tags": ["Vua Thứ Tư 17/45 (37.8%)", "Nhịp chín (2d)", "Nóng 30d (11x)"]}, {"num": "95", "score": 5.0, "gan": 0, "c15": 5, "c30": 6, "c_wd": 16, "wd_n": 45, "trap": false, "tags": ["Vua Thứ Tư 16/45 (35.6%)", "Sau 89 23+ (53.8%)"]}, {"num": "73", "score": 5.0, "gan": 2, "c15": 4, "c30": 8, "c_wd": 14, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (31.1%)", "Sau 89 13y (34.6%)", "Nhịp chín (2d)"]}, {"num": "58", "score": 5.0, "gan": 5, "c15": 1, "c30": 3, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)", "STL cầu 8d", "Nhịp chín (5d)"]}, {"num": "82", "score": 5.0, "gan": 2, "c15": 2, "c30": 5, "c_wd": 4, "wd_n": 45, "trap": false, "tags": ["Sau 89 13y (34.6%)", "Bật Đuôi câm 2", "Nhịp chín (2d)"]}, {"num": "20", "score": 4.5, "gan": 4, "c15": 4, "c30": 6, "c_wd": 16, "wd_n": 45, "trap": false, "tags": ["Vua Thứ Tư 16/45 (35.6%)", "Nhịp chín (4d)"]}, {"num": "42", "score": 4.5, "gan": 6, "c15": 1, "c30": 2, "c_wd": 15, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (33.3%)", "Bật Đuôi câm 2", "Nhịp chín (6d)"]}, {"num": "66", "score": 4.5, "gan": 6, "c15": 1, "c30": 3, "c_wd": 14, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (31.1%)", "Bật Đuôi câm 6", "Nhịp chín (6d)"]}, {"num": "72", "score": 4.5, "gan": 9, "c15": 3, "c30": 8, "c_wd": 14, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (31.1%)", "Cầu kẹp", "Bật Đuôi câm 2"]}, {"num": "07", "score": 4.5, "gan": 3, "c15": 4, "c30": 8, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)", "Cầu kẹp", "Nhịp chín (3d)"]}, {"num": "08", "score": 4.5, "gan": 2, "c15": 6, "c30": 10, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["Sau 89 13y (34.6%)", "Nhịp chín (2d)", "Nóng 30d (10x)"]}, {"num": "14", "score": 4.5, "gan": 2, "c15": 9, "c30": 15, "c_wd": 6, "wd_n": 45, "trap": false, "tags": ["Pascal ĐB+G1 (41)", "Nhịp chín (2d)", "Nóng 30d (15x)"]}, {"num": "86", "score": 4.0, "gan": 2, "c15": 5, "c30": 10, "c_wd": 12, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 6", "Nhịp chín (2d)", "Nóng 30d (10x)"]}, {"num": "76", "score": 4.0, "gan": 5, "c15": 6, "c30": 10, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 6", "Nhịp chín (5d)", "Nóng 30d (10x)"]}, {"num": "96", "score": 4.0, "gan": 2, "c15": 5, "c30": 11, "c_wd": 8, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 6", "Nhịp chín (2d)", "Nóng 30d (11x)"]}, {"num": "09", "score": 3.5, "gan": 1, "c15": 5, "c30": 7, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)", "Cầu kẹp", "gan 1d"]}, {"num": "41", "score": 3.5, "gan": 8, "c15": 2, "c30": 6, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)", "Pascal ĐB+G1 (41)"]}, {"num": "00", "score": 3.5, "gan": 0, "c15": 9, "c30": 13, "c_wd": 10, "wd_n": 45, "trap": false, "tags": ["BTL cầu 5d (22.3%)", "Nóng 30d (13x)"]}, {"num": "39", "score": 3.5, "gan": 7, "c15": 3, "c30": 4, "c_wd": 10, "wd_n": 45, "trap": false, "tags": ["STL cầu 10d", "Nhịp chín (7d)"]}, {"num": "16", "score": 3.5, "gan": 10, "c15": 1, "c30": 6, "c_wd": 10, "wd_n": 45, "trap": false, "tags": ["STL cầu 7d", "Bật Đuôi câm 6"]}, {"num": "29", "score": 3.5, "gan": 5, "c15": 7, "c30": 9, "c_wd": 2, "wd_n": 45, "trap": false, "tags": ["STL cầu 8d", "Nhịp chín (5d)"]}, {"num": "90", "score": 3.0, "gan": 10, "c15": 2, "c30": 9, "c_wd": 15, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (33.3%)", "Cầu kẹp"]}, {"num": "45", "score": 3.0, "gan": 1, "c15": 8, "c30": 11, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)", "gan 1d", "Nóng 30d (11x)"]}, {"num": "68", "score": 3.0, "gan": 4, "c15": 7, "c30": 8, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)", "Nhịp chín (4d)"]}, {"num": "12", "score": 3.0, "gan": 1, "c15": 8, "c30": 11, "c_wd": 12, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 2", "gan 1d", "Nóng 30d (11x)"]}, {"num": "52", "score": 3.0, "gan": 1, "c15": 5, "c30": 14, "c_wd": 12, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 2", "gan 1d", "Nóng 30d (14x)"]}, {"num": "70", "score": 3.0, "gan": 7, "c15": 2, "c30": 7, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["Cầu kẹp", "Nhịp chín (7d)"]}, {"num": "26", "score": 3.0, "gan": 1, "c15": 5, "c30": 12, "c_wd": 10, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 6", "gan 1d", "Nóng 30d (12x)"]}, {"num": "62", "score": 3.0, "gan": 3, "c15": 4, "c30": 9, "c_wd": 9, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 2", "Nhịp chín (3d)"]}, {"num": "56", "score": 3.0, "gan": 3, "c15": 3, "c30": 7, "c_wd": 8, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 6", "Nhịp chín (3d)"]}, {"num": "46", "score": 3.0, "gan": 4, "c15": 4, "c30": 9, "c_wd": 8, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 6", "Nhịp chín (4d)"]}, {"num": "22", "score": 3.0, "gan": 3, "c15": 1, "c30": 3, "c_wd": 6, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 2", "Nhịp chín (3d)"]}, {"num": "79", "score": 2.5, "gan": 0, "c15": 5, "c30": 10, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)", "Nóng 30d (10x)"]}, {"num": "17", "score": 2.5, "gan": 2, "c15": 6, "c30": 15, "c_wd": 12, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (2d)", "Nóng 30d (15x)"]}, {"num": "01", "score": 2.5, "gan": 3, "c15": 6, "c30": 11, "c_wd": 12, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (3d)", "Nóng 30d (11x)"]}, {"num": "61", "score": 2.5, "gan": 1, "c15": 4, "c30": 6, "c_wd": 10, "wd_n": 45, "trap": false, "tags": ["STL cầu 7d", "gan 1d"]}, {"num": "97", "score": 2.5, "gan": 5, "c15": 4, "c30": 11, "c_wd": 9, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (5d)", "Nóng 30d (11x)"]}, {"num": "47", "score": 2.5, "gan": 6, "c15": 3, "c30": 10, "c_wd": 9, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (6d)", "Nóng 30d (10x)"]}, {"num": "04", "score": 2.5, "gan": 2, "c15": 6, "c30": 13, "c_wd": 8, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (2d)", "Nóng 30d (13x)"]}, {"num": "34", "score": 2.5, "gan": 5, "c15": 3, "c30": 15, "c_wd": 8, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (5d)", "Nóng 30d (15x)"]}, {"num": "25", "score": 2.5, "gan": 3, "c15": 5, "c30": 10, "c_wd": 5, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (3d)", "Nóng 30d (10x)"]}, {"num": "35", "score": 2.0, "gan": 1, "c15": 4, "c30": 7, "c_wd": 14, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (31.1%)", "gan 1d"]}, {"num": "50", "score": 2.0, "gan": 1, "c15": 4, "c30": 7, "c_wd": 14, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (31.1%)", "gan 1d"]}, {"num": "21", "score": 2.0, "gan": 1, "c15": 2, "c30": 3, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)", "gan 1d"]}, {"num": "36", "score": 2.0, "gan": 1, "c15": 4, "c30": 6, "c_wd": 9, "wd_n": 45, "trap": false, "tags": ["Bật Đuôi câm 6", "gan 1d"]}, {"num": "93", "score": 2.0, "gan": 9, "c15": 5, "c30": 9, "c_wd": 8, "wd_n": 45, "trap": false, "tags": ["STL cầu 10d"]}, {"num": "85", "score": 2.0, "gan": 0, "c15": 3, "c30": 6, "c_wd": 6, "wd_n": 45, "trap": false, "tags": ["STL cầu 8d"]}, {"num": "88", "score": 1.5, "gan": 0, "c15": 2, "c30": 9, "c_wd": 15, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (33.3%)"]}, {"num": "11", "score": 1.5, "gan": 0, "c15": 3, "c30": 7, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)"]}, {"num": "30", "score": 1.5, "gan": 0, "c15": 1, "c30": 4, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)"]}, {"num": "98", "score": 1.5, "gan": 0, "c15": 3, "c30": 5, "c_wd": 13, "wd_n": 45, "trap": false, "tags": ["Thứ Tư tốt (28.9%)"]}, {"num": "33", "score": 1.5, "gan": 3, "c15": 5, "c30": 8, "c_wd": 12, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (3d)"]}, {"num": "05", "score": 1.5, "gan": 7, "c15": 2, "c30": 5, "c_wd": 12, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (7d)"]}, {"num": "94", "score": 1.5, "gan": 1, "c15": 5, "c30": 12, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["gan 1d", "Nóng 30d (12x)"]}, {"num": "59", "score": 1.5, "gan": 2, "c15": 2, "c30": 7, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (2d)"]}, {"num": "87", "score": 1.5, "gan": 4, "c15": 2, "c30": 7, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (4d)"]}, {"num": "10", "score": 1.5, "gan": 6, "c15": 2, "c30": 7, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (6d)"]}, {"num": "64", "score": 1.5, "gan": 2, "c15": 2, "c30": 9, "c_wd": 10, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (2d)"]}, {"num": "31", "score": 1.5, "gan": 3, "c15": 3, "c30": 7, "c_wd": 10, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (3d)"]}, {"num": "44", "score": 1.5, "gan": 4, "c15": 3, "c30": 7, "c_wd": 10, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (4d)"]}, {"num": "28", "score": 1.5, "gan": 1, "c15": 4, "c30": 11, "c_wd": 9, "wd_n": 45, "trap": false, "tags": ["gan 1d", "Nóng 30d (11x)"]}, {"num": "51", "score": 1.5, "gan": 1, "c15": 5, "c30": 10, "c_wd": 9, "wd_n": 45, "trap": false, "tags": ["gan 1d", "Nóng 30d (10x)"]}, {"num": "74", "score": 1.5, "gan": 2, "c15": 1, "c30": 3, "c_wd": 7, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (2d)"]}, {"num": "27", "score": 1.5, "gan": 0, "c15": 2, "c30": 4, "c_wd": 6, "wd_n": 45, "trap": false, "tags": ["Cầu kẹp"]}, {"num": "43", "score": 1.5, "gan": 2, "c15": 2, "c30": 5, "c_wd": 6, "wd_n": 45, "trap": false, "tags": ["Nhịp chín (2d)"]}, {"num": "89", "score": 1.0, "gan": 0, "c15": 7, "c30": 10, "c_wd": 12, "wd_n": 45, "trap": false, "tags": ["Nóng 30d (10x)"]}, {"num": "24", "score": 1.0, "gan": 0, "c15": 6, "c30": 13, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["Nóng 30d (13x)"]}, {"num": "49", "score": 1.0, "gan": 0, "c15": 6, "c30": 11, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["Nóng 30d (11x)"]}, {"num": "83", "score": 1.0, "gan": 0, "c15": 6, "c30": 12, "c_wd": 11, "wd_n": 45, "trap": false, "tags": ["Nóng 30d (12x)"]}, {"num": "53", "score": 1.0, "gan": 0, "c15": 4, "c30": 10, "c_wd": 9, "wd_n": 45, "trap": false, "tags": ["Nóng 30d (10x)"]}, {"num": "63", "score": 1.0, "gan": 0, "c15": 6, "c30": 10, "c_wd": 9, "wd_n": 45, "trap": false, "tags": ["Nóng 30d (10x)"]}, {"num": "23", "score": 1.0, "gan": 0, "c15": 7, "c30": 12, "c_wd": 6, "wd_n": 45, "trap": false, "tags": ["Nóng 30d (12x)"]}, {"num": "57", "score": 0.5, "gan": 1, "c15": 6, "c30": 9, "c_wd": 12, "wd_n": 45, "trap": false, "tags": ["gan 1d"]}, {"num": "71", "score": 0.5, "gan": 1, "c15": 3, "c30": 8, "c_wd": 10, "wd_n": 45, "trap": false, "tags": ["gan 1d"]}, {"num": "75", "score": 0.0, "gan": 0, "c15": 3, "c30": 8, "c_wd": 12, "wd_n": 45, "trap": false, "tags": []}, {"num": "15", "score": 0.0, "gan": 0, "c15": 4, "c30": 4, "c_wd": 11, "wd_n": 45, "trap": false, "tags": []}, {"num": "38", "score": 0.0, "gan": 9, "c15": 2, "c30": 4, "c_wd": 11, "wd_n": 45, "trap": false, "tags": []}, {"num": "80", "score": 0.0, "gan": 9, "c15": 3, "c30": 3, "c_wd": 11, "wd_n": 45, "trap": false, "tags": []}, {"num": "67", "score": 0.0, "gan": 0, "c15": 5, "c30": 7, "c_wd": 10, "wd_n": 45, "trap": false, "tags": []}, {"num": "84", "score": 0.0, "gan": 0, "c15": 4, "c30": 7, "c_wd": 10, "wd_n": 45, "trap": false, "tags": []}, {"num": "99", "score": 0.0, "gan": 0, "c15": 6, "c30": 9, "c_wd": 10, "wd_n": 45, "trap": false, "tags": []}, {"num": "77", "score": 0.0, "gan": 10, "c15": 1, "c30": 5, "c_wd": 10, "wd_n": 45, "trap": false, "tags": []}, {"num": "65", "score": 0.0, "gan": 0, "c15": 7, "c30": 9, "c_wd": 9, "wd_n": 45, "trap": false, "tags": []}, {"num": "78", "score": 0.0, "gan": 0, "c15": 6, "c30": 9, "c_wd": 9, "wd_n": 45, "trap": false, "tags": []}, {"num": "19", "score": 0.0, "gan": 0, "c15": 3, "c30": 8, "c_wd": 8, "wd_n": 45, "trap": false, "tags": []}, {"num": "40", "score": 0.0, "gan": 0, "c15": 4, "c30": 9, "c_wd": 8, "wd_n": 45, "trap": false, "tags": []}, {"num": "03", "score": 0.0, "gan": 8, "c15": 3, "c30": 6, "c_wd": 8, "wd_n": 45, "trap": false, "tags": []}, {"num": "54", "score": 0.0, "gan": 8, "c15": 2, "c30": 3, "c_wd": 8, "wd_n": 45, "trap": false, "tags": []}, {"num": "18", "score": -2.0, "gan": 14, "c15": 1, "c30": 2, "c_wd": 12, "wd_n": 45, "trap": true, "tags": ["Bẫy Lô Gan (14d)"]}, {"num": "55", "score": -2.0, "gan": 21, "c15": 0, "c30": 3, "c_wd": 10, "wd_n": 45, "trap": true, "tags": ["Bẫy Lô Gan (21d)"]}, {"num": "37", "score": -2.0, "gan": 22, "c15": 0, "c30": 4, "c_wd": 9, "wd_n": 45, "trap": true, "tags": ["Bẫy Lô Gan (22d)"]}, {"num": "81", "score": -2.0, "gan": 12, "c15": 1, "c30": 7, "c_wd": 8, "wd_n": 45, "trap": true, "tags": ["Bẫy Lô Gan (12d)"]}], "scores_de_all": [{"num": "42", "score": 14.5, "tong": "6", "bo": "24", "gan": 37, "c_yr": 6, "c_wd": 2, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 4 (3 cầu 4d)", "Đầu 4 gan 20d", "Đuôi 2 gan 15d", "Đầu 4 Thứ Tư (7)", "Tổng 6 (1 cầu 3d)", "Tổng 6 Thứ Tư (8)", "Tổng 6 sau 89", "Bộ 24 sau 89"]}, {"num": "46", "score": 12.5, "tong": "0", "bo": "14", "gan": 20, "c_yr": 3, "c_wd": 1, "trap": false, "tags": ["Chạm 6 (4d)", "Chạm 4 (3 cầu 4d)", "Đầu 4 gan 20d", "Đầu 4 Thứ Tư (7)", "Đuôi 6 Thứ Tư (6)", "Tổng 0 (1 cầu 3d)", "Tổng 0 gan 20d", "Bộ 14 Thứ Tư (6)"]}, {"num": "08", "score": 10.5, "tong": "8", "bo": "03", "gan": 54, "c_yr": 3, "c_wd": 1, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Chạm 8 (4d)", "Đuôi 8 Thứ Tư (7)", "Tổng 8 gan 16d", "Tổng 8 Thứ Tư (6)", "Tổng 8 sau 89", "Bộ 03 sau 89"]}, {"num": "12", "score": 10.5, "tong": "3", "bo": "12", "gan": 66, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 1 (4d)", "Đuôi 2 gan 15d", "Đầu 1 Thứ Tư (7)", "Tổng 3 (1 cầu 3d)", "Tổng 3 sau 89", "Bộ 12 sau 89"]}, {"num": "80", "score": 10.5, "tong": "8", "bo": "03", "gan": 91, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Chạm 8 (4d)", "Đầu 8 Thứ Tư (7)", "Tổng 8 gan 16d", "Tổng 8 Thứ Tư (6)", "Tổng 8 sau 89", "Bộ 03 sau 89"]}, {"num": "86", "score": 10.0, "tong": "4", "bo": "13", "gan": 2, "c_yr": 3, "c_wd": 1, "trap": false, "tags": ["Chạm 6 (4d)", "Chạm 8 (4d)", "Đầu 8 Thứ Tư (7)", "Đuôi 6 Thứ Tư (6)", "Tổng 4 Thứ Tư (6)", "Tổng 4 sau 89", "Bộ 13 Thứ Tư (6)", "Bộ 13 sau 89"]}, {"num": "60", "score": 10.0, "tong": "6", "bo": "01", "gan": 4, "c_yr": 4, "c_wd": 1, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Chạm 6 (4d)", "Đầu 6 Thứ Tư (7)", "Tổng 6 (1 cầu 3d)", "Tổng 6 Thứ Tư (8)", "Tổng 6 sau 89"]}, {"num": "26", "score": 10.0, "tong": "8", "bo": "12", "gan": 16, "c_yr": 2, "c_wd": 1, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 6 (4d)", "Đuôi 6 Thứ Tư (6)", "Tổng 8 gan 16d", "Tổng 8 Thứ Tư (6)", "Tổng 8 sau 89", "Bộ 12 sau 89"]}, {"num": "32", "score": 10.0, "tong": "5", "bo": "23", "gan": 31, "c_yr": 6, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Đầu 3 gan 31d", "Đuôi 2 gan 15d", "Tổng 5 (1 cầu 3d)", "Tổng 5 sau 89", "Bộ 23 sau 89"]}, {"num": "06", "score": 10.0, "tong": "6", "bo": "01", "gan": 62, "c_yr": 2, "c_wd": 1, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Chạm 6 (4d)", "Đuôi 6 Thứ Tư (6)", "Tổng 6 (1 cầu 3d)", "Tổng 6 Thứ Tư (8)", "Tổng 6 sau 89"]}, {"num": "68", "score": 10.0, "tong": "4", "bo": "13", "gan": 88, "c_yr": 6, "c_wd": 2, "trap": false, "tags": ["Chạm 6 (4d)", "Chạm 8 (4d)", "Đầu 6 Thứ Tư (7)", "Đuôi 8 Thứ Tư (7)", "Tổng 4 Thứ Tư (6)", "Tổng 4 sau 89", "Bộ 13 Thứ Tư (6)", "Bộ 13 sau 89"]}, {"num": "47", "score": 10.0, "tong": "1", "bo": "24", "gan": 113, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["Chạm 4 (3 cầu 4d)", "Đầu 4 gan 20d", "Đuôi 7 gan 18d", "Đầu 4 Thứ Tư (7)", "Tổng 1 (1 cầu 3d)", "Bộ 24 sau 89"]}, {"num": "19", "score": 10.0, "tong": "0", "bo": "14", "gan": 132, "c_yr": 2, "c_wd": 2, "trap": false, "tags": ["1-pos Chạm 9", "Chạm 1 (4d)", "Đầu 1 Thứ Tư (7)", "Đuôi 9 Thứ Tư (7)", "Tổng 0 (1 cầu 3d)", "Tổng 0 gan 20d", "Bộ 14 Thứ Tư (6)"]}, {"num": "41", "score": 10.0, "tong": "5", "bo": "14", "gan": 202, "c_yr": 1, "c_wd": 1, "trap": false, "tags": ["Chạm 1 (4d)", "Chạm 4 (3 cầu 4d)", "Đầu 4 gan 20d", "Đầu 4 Thứ Tư (7)", "Tổng 5 (1 cầu 3d)", "Tổng 5 sau 89", "Bộ 14 Thứ Tư (6)"]}, {"num": "82", "score": 10.0, "tong": "0", "bo": "23", "gan": 231, "c_yr": 1, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 8 (4d)", "Đuôi 2 gan 15d", "Đầu 8 Thứ Tư (7)", "Tổng 0 (1 cầu 3d)", "Tổng 0 gan 20d", "Bộ 23 sau 89"]}, {"num": "14", "score": 9.5, "tong": "5", "bo": "14", "gan": 17, "c_yr": 6, "c_wd": 1, "trap": false, "tags": ["Chạm 4 (3 cầu 4d)", "Chạm 1 (4d)", "Đầu 1 Thứ Tư (7)", "Tổng 5 (1 cầu 3d)", "Tổng 5 sau 89", "Bộ 14 Thứ Tư (6)"]}, {"num": "17", "score": 9.5, "tong": "8", "bo": "12", "gan": 23, "c_yr": 6, "c_wd": 2, "trap": false, "tags": ["Chạm 1 (4d)", "Đuôi 7 gan 18d", "Đầu 1 Thứ Tư (7)", "Tổng 8 gan 16d", "Tổng 8 Thứ Tư (6)", "Tổng 8 sau 89", "Bộ 12 sau 89"]}, {"num": "28", "score": 9.5, "tong": "0", "bo": "23", "gan": 30, "c_yr": 5, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 8 (4d)", "Đuôi 8 Thứ Tư (7)", "Tổng 0 (1 cầu 3d)", "Tổng 0 gan 20d", "Bộ 23 sau 89"]}, {"num": "44", "score": 9.5, "tong": "8", "bo": "44", "gan": 69, "c_yr": 4, "c_wd": 1, "trap": false, "tags": ["Chạm 4 (3 cầu 4d)", "Đầu 4 gan 20d", "Đầu 4 Thứ Tư (7)", "Tổng 8 gan 16d", "Tổng 8 Thứ Tư (6)", "Tổng 8 sau 89"]}, {"num": "40", "score": 9.5, "tong": "4", "bo": "04", "gan": 201, "c_yr": 1, "c_wd": 0, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Chạm 4 (3 cầu 4d)", "Đầu 4 gan 20d", "Đầu 4 Thứ Tư (7)", "Tổng 4 Thứ Tư (6)", "Tổng 4 sau 89"]}, {"num": "24", "score": 9.5, "tong": "6", "bo": "24", "gan": 249, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 4 (3 cầu 4d)", "Tổng 6 (1 cầu 3d)", "Tổng 6 Thứ Tư (8)", "Tổng 6 sau 89", "Bộ 24 sau 89"]}, {"num": "49", "score": 9.5, "tong": "3", "bo": "44", "gan": 263, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["1-pos Chạm 9", "Chạm 4 (3 cầu 4d)", "Đầu 4 gan 20d", "Đầu 4 Thứ Tư (7)", "Đuôi 9 Thứ Tư (7)", "Tổng 3 (1 cầu 3d)", "Tổng 3 sau 89"]}, {"num": "62", "score": 9.5, "tong": "8", "bo": "12", "gan": 300, "c_yr": 2, "c_wd": 0, "trap": true, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 6 (4d)", "Đuôi 2 gan 15d", "Đầu 6 Thứ Tư (7)", "Tổng 8 gan 16d", "Tổng 8 Thứ Tư (6)", "Tổng 8 sau 89", "Bộ 12 sau 89", "Bẫy Đại Gan (300d)"]}, {"num": "02", "score": 9.0, "tong": "2", "bo": "02", "gan": 19, "c_yr": 1, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 0 (cầu 5d)", "Đuôi 2 gan 15d", "Tổng 2 (1 cầu 3d)"]}, {"num": "18", "score": 9.0, "tong": "9", "bo": "13", "gan": 42, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 8 (4d)", "Chạm 1 (4d)", "Đầu 1 Thứ Tư (7)", "Đuôi 8 Thứ Tư (7)", "Tổng 9 gan 12d", "Bộ 13 Thứ Tư (6)", "Bộ 13 sau 89"]}, {"num": "53", "score": 9.0, "tong": "8", "bo": "03", "gan": 45, "c_yr": 4, "c_wd": 1, "trap": false, "tags": ["Chạm 5 (4d)", "Đầu 5 Thứ Tư (6)", "Đuôi 3 Thứ Tư (6)", "Tổng 8 gan 16d", "Tổng 8 Thứ Tư (6)", "Tổng 8 sau 89", "Bộ 03 sau 89"]}, {"num": "13", "score": 9.0, "tong": "4", "bo": "13", "gan": 94, "c_yr": 3, "c_wd": 1, "trap": false, "tags": ["Chạm 1 (4d)", "Đầu 1 Thứ Tư (7)", "Đuôi 3 Thứ Tư (6)", "Tổng 4 Thứ Tư (6)", "Tổng 4 sau 89", "Bộ 13 Thứ Tư (6)", "Bộ 13 sau 89"]}, {"num": "97", "score": 9.0, "tong": "6", "bo": "24", "gan": 141, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["1-pos Chạm 9", "Đuôi 7 gan 18d", "Tổng 6 (1 cầu 3d)", "Tổng 6 Thứ Tư (8)", "Tổng 6 sau 89", "Bộ 24 sau 89"]}, {"num": "64", "score": 9.0, "tong": "0", "bo": "14", "gan": 205, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 6 (4d)", "Chạm 4 (3 cầu 4d)", "Đầu 6 Thứ Tư (7)", "Tổng 0 (1 cầu 3d)", "Tổng 0 gan 20d", "Bộ 14 Thứ Tư (6)"]}, {"num": "15", "score": 8.5, "tong": "6", "bo": "01", "gan": 6, "c_yr": 2, "c_wd": 1, "trap": false, "tags": ["Chạm 5 (4d)", "Chạm 1 (4d)", "Đầu 1 Thứ Tư (7)", "Tổng 6 (1 cầu 3d)", "Tổng 6 Thứ Tư (8)", "Tổng 6 sau 89"]}, {"num": "03", "score": 8.5, "tong": "3", "bo": "03", "gan": 8, "c_yr": 2, "c_wd": 1, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Đuôi 3 Thứ Tư (6)", "Tổng 3 (1 cầu 3d)", "Tổng 3 sau 89", "Bộ 03 sau 89"]}, {"num": "51", "score": 8.5, "tong": "6", "bo": "01", "gan": 11, "c_yr": 9, "c_wd": 1, "trap": false, "tags": ["Chạm 5 (4d)", "Chạm 1 (4d)", "Đầu 5 Thứ Tư (6)", "Tổng 6 (1 cầu 3d)", "Tổng 6 Thứ Tư (8)", "Tổng 6 sau 89"]}, {"num": "67", "score": 8.5, "tong": "3", "bo": "12", "gan": 32, "c_yr": 5, "c_wd": 0, "trap": false, "tags": ["Chạm 6 (4d)", "Đuôi 7 gan 18d", "Đầu 6 Thứ Tư (7)", "Tổng 3 (1 cầu 3d)", "Tổng 3 sau 89", "Bộ 12 sau 89"]}, {"num": "87", "score": 8.5, "tong": "5", "bo": "23", "gan": 43, "c_yr": 4, "c_wd": 1, "trap": false, "tags": ["Chạm 8 (4d)", "Đuôi 7 gan 18d", "Đầu 8 Thứ Tư (7)", "Tổng 5 (1 cầu 3d)", "Tổng 5 sau 89", "Bộ 23 sau 89"]}, {"num": "35", "score": 8.5, "tong": "8", "bo": "03", "gan": 46, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["Chạm 5 (4d)", "Đầu 3 gan 31d", "Tổng 8 gan 16d", "Tổng 8 Thứ Tư (6)", "Tổng 8 sau 89", "Bộ 03 sau 89"]}, {"num": "88", "score": 8.5, "tong": "6", "bo": "33", "gan": 48, "c_yr": 3, "c_wd": 2, "trap": false, "tags": ["Chạm 8 (4d)", "Đầu 8 Thứ Tư (7)", "Đuôi 8 Thứ Tư (7)", "Tổng 6 (1 cầu 3d)", "Tổng 6 Thứ Tư (8)", "Tổng 6 sau 89"]}, {"num": "96", "score": 8.5, "tong": "5", "bo": "14", "gan": 61, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["Chạm 6 (4d)", "1-pos Chạm 9", "Đuôi 6 Thứ Tư (6)", "Tổng 5 (1 cầu 3d)", "Tổng 5 sau 89", "Bộ 14 Thứ Tư (6)"]}, {"num": "37", "score": 8.5, "tong": "0", "bo": "23", "gan": 80, "c_yr": 6, "c_wd": 0, "trap": false, "tags": ["Đầu 3 gan 31d", "Đuôi 7 gan 18d", "Tổng 0 (1 cầu 3d)", "Tổng 0 gan 20d", "Bộ 23 sau 89"]}, {"num": "79", "score": 8.5, "tong": "6", "bo": "24", "gan": 109, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["1-pos Chạm 9", "Đuôi 9 Thứ Tư (7)", "Tổng 6 (1 cầu 3d)", "Tổng 6 Thứ Tư (8)", "Tổng 6 sau 89", "Bộ 24 sau 89"]}, {"num": "36", "score": 8.5, "tong": "9", "bo": "13", "gan": 155, "c_yr": 3, "c_wd": 1, "trap": false, "tags": ["Chạm 6 (4d)", "Đầu 3 gan 31d", "Đuôi 6 Thứ Tư (6)", "Tổng 9 gan 12d", "Bộ 13 Thứ Tư (6)", "Bộ 13 sau 89"]}, {"num": "69", "score": 8.5, "tong": "5", "bo": "14", "gan": 194, "c_yr": 3, "c_wd": 1, "trap": false, "tags": ["Chạm 6 (4d)", "1-pos Chạm 9", "Đầu 6 Thứ Tư (7)", "Đuôi 9 Thứ Tư (7)", "Tổng 5 (1 cầu 3d)", "Tổng 5 sau 89", "Bộ 14 Thứ Tư (6)"]}, {"num": "48", "score": 8.5, "tong": "2", "bo": "34", "gan": 216, "c_yr": 5, "c_wd": 1, "trap": false, "tags": ["Chạm 8 (4d)", "Chạm 4 (3 cầu 4d)", "Đầu 4 gan 20d", "Đầu 4 Thứ Tư (7)", "Đuôi 8 Thứ Tư (7)", "Tổng 2 (1 cầu 3d)"]}, {"num": "04", "score": 8.0, "tong": "4", "bo": "04", "gan": 3, "c_yr": 6, "c_wd": 1, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Chạm 4 (3 cầu 4d)", "Tổng 4 Thứ Tư (6)", "Tổng 4 sau 89"]}, {"num": "29", "score": 8.0, "tong": "1", "bo": "24", "gan": 13, "c_yr": 4, "c_wd": 1, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "1-pos Chạm 9", "Đuôi 9 Thứ Tư (7)", "Tổng 1 (1 cầu 3d)", "Bộ 24 sau 89"]}, {"num": "91", "score": 8.0, "tong": "0", "bo": "14", "gan": 28, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["Chạm 1 (4d)", "1-pos Chạm 9", "Tổng 0 (1 cầu 3d)", "Tổng 0 gan 20d", "Bộ 14 Thứ Tư (6)"]}, {"num": "21", "score": 8.0, "tong": "3", "bo": "12", "gan": 29, "c_yr": 5, "c_wd": 1, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 1 (4d)", "Tổng 3 (1 cầu 3d)", "Tổng 3 sau 89", "Bộ 12 sau 89"]}, {"num": "63", "score": 8.0, "tong": "9", "bo": "13", "gan": 34, "c_yr": 5, "c_wd": 1, "trap": false, "tags": ["Chạm 6 (4d)", "Đầu 6 Thứ Tư (7)", "Đuôi 3 Thứ Tư (6)", "Tổng 9 gan 12d", "Bộ 13 Thứ Tư (6)", "Bộ 13 sau 89"]}, {"num": "81", "score": 8.0, "tong": "9", "bo": "13", "gan": 75, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["Chạm 8 (4d)", "Chạm 1 (4d)", "Đầu 8 Thứ Tư (7)", "Tổng 9 gan 12d", "Bộ 13 Thứ Tư (6)", "Bộ 13 sau 89"]}, {"num": "45", "score": 8.0, "tong": "9", "bo": "04", "gan": 89, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 5 (4d)", "Chạm 4 (3 cầu 4d)", "Đầu 4 gan 20d", "Đầu 4 Thứ Tư (7)", "Tổng 9 gan 12d"]}, {"num": "33", "score": 8.0, "tong": "6", "bo": "33", "gan": 95, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["Đầu 3 gan 31d", "Đuôi 3 Thứ Tư (6)", "Tổng 6 (1 cầu 3d)", "Tổng 6 Thứ Tư (8)", "Tổng 6 sau 89"]}, {"num": "23", "score": 8.0, "tong": "5", "bo": "23", "gan": 96, "c_yr": 5, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Đuôi 3 Thứ Tư (6)", "Tổng 5 (1 cầu 3d)", "Tổng 5 sau 89", "Bộ 23 sau 89"]}, {"num": "85", "score": 8.0, "tong": "3", "bo": "03", "gan": 138, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["Chạm 8 (4d)", "Chạm 5 (4d)", "Đầu 8 Thứ Tư (7)", "Tổng 3 (1 cầu 3d)", "Tổng 3 sau 89", "Bộ 03 sau 89"]}, {"num": "30", "score": 8.0, "tong": "3", "bo": "03", "gan": 279, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Đầu 3 gan 31d", "Tổng 3 (1 cầu 3d)", "Tổng 3 sau 89", "Bộ 03 sau 89"]}, {"num": "59", "score": 7.5, "tong": "4", "bo": "04", "gan": 25, "c_yr": 5, "c_wd": 1, "trap": false, "tags": ["Chạm 5 (4d)", "1-pos Chạm 9", "Đầu 5 Thứ Tư (6)", "Đuôi 9 Thứ Tư (7)", "Tổng 4 Thứ Tư (6)", "Tổng 4 sau 89"]}, {"num": "10", "score": 7.5, "tong": "1", "bo": "01", "gan": 116, "c_yr": 1, "c_wd": 0, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Chạm 1 (4d)", "Đầu 1 Thứ Tư (7)", "Tổng 1 (1 cầu 3d)"]}, {"num": "50", "score": 7.5, "tong": "5", "bo": "00", "gan": 180, "c_yr": 2, "c_wd": 1, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Chạm 5 (4d)", "Đầu 5 Thứ Tư (6)", "Tổng 5 (1 cầu 3d)", "Tổng 5 sau 89"]}, {"num": "92", "score": 7.5, "tong": "1", "bo": "24", "gan": 199, "c_yr": 2, "c_wd": 1, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "1-pos Chạm 9", "Đuôi 2 gan 15d", "Tổng 1 (1 cầu 3d)", "Bộ 24 sau 89"]}, {"num": "78", "score": 7.0, "tong": "5", "bo": "23", "gan": 5, "c_yr": 5, "c_wd": 0, "trap": false, "tags": ["Chạm 8 (4d)", "Đuôi 8 Thứ Tư (7)", "Tổng 5 (1 cầu 3d)", "Tổng 5 sau 89", "Bộ 23 sau 89"]}, {"num": "09", "score": 7.0, "tong": "9", "bo": "04", "gan": 35, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "1-pos Chạm 9", "Đuôi 9 Thứ Tư (7)", "Tổng 9 gan 12d"]}, {"num": "56", "score": 7.0, "tong": "1", "bo": "01", "gan": 39, "c_yr": 1, "c_wd": 0, "trap": false, "tags": ["Chạm 6 (4d)", "Chạm 5 (4d)", "Đầu 5 Thứ Tư (6)", "Đuôi 6 Thứ Tư (6)", "Tổng 1 (1 cầu 3d)"]}, {"num": "22", "score": 7.0, "tong": "4", "bo": "22", "gan": 63, "c_yr": 6, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Đuôi 2 gan 15d", "Tổng 4 Thứ Tư (6)", "Tổng 4 sau 89"]}, {"num": "99", "score": 7.0, "tong": "8", "bo": "44", "gan": 72, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["1-pos Chạm 9", "Đuôi 9 Thứ Tư (7)", "Tổng 8 gan 16d", "Tổng 8 Thứ Tư (6)", "Tổng 8 sau 89"]}, {"num": "00", "score": 7.0, "tong": "0", "bo": "00", "gan": 119, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Tổng 0 (1 cầu 3d)", "Tổng 0 gan 20d"]}, {"num": "94", "score": 7.0, "tong": "3", "bo": "44", "gan": 135, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["Chạm 4 (3 cầu 4d)", "1-pos Chạm 9", "Tổng 3 (1 cầu 3d)", "Tổng 3 sau 89"]}, {"num": "71", "score": 7.0, "tong": "8", "bo": "12", "gan": 142, "c_yr": 1, "c_wd": 0, "trap": false, "tags": ["Chạm 1 (4d)", "Tổng 8 gan 16d", "Tổng 8 Thứ Tư (6)", "Tổng 8 sau 89", "Bộ 12 sau 89"]}, {"num": "58", "score": 7.0, "tong": "3", "bo": "03", "gan": 546, "c_yr": 0, "c_wd": 0, "trap": true, "tags": ["Chạm 8 (4d)", "Chạm 5 (4d)", "Đầu 5 Thứ Tư (6)", "Đuôi 8 Thứ Tư (7)", "Tổng 3 (1 cầu 3d)", "Tổng 3 sau 89", "Bộ 03 sau 89", "Bẫy Đại Gan (546d)"]}, {"num": "54", "score": 6.5, "tong": "9", "bo": "04", "gan": 12, "c_yr": 10, "c_wd": 2, "trap": false, "tags": ["Chạm 5 (4d)", "Chạm 4 (3 cầu 4d)", "Đầu 5 Thứ Tư (6)", "Tổng 9 gan 12d"]}, {"num": "57", "score": 6.5, "tong": "2", "bo": "02", "gan": 24, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["Chạm 5 (4d)", "Đuôi 7 gan 18d", "Đầu 5 Thứ Tư (6)", "Tổng 2 (1 cầu 3d)"]}, {"num": "01", "score": 6.5, "tong": "1", "bo": "01", "gan": 26, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Chạm 1 (4d)", "Tổng 1 (1 cầu 3d)"]}, {"num": "38", "score": 6.5, "tong": "1", "bo": "33", "gan": 38, "c_yr": 8, "c_wd": 1, "trap": false, "tags": ["Chạm 8 (4d)", "Đầu 3 gan 31d", "Đuôi 8 Thứ Tư (7)", "Tổng 1 (1 cầu 3d)"]}, {"num": "39", "score": 6.5, "tong": "2", "bo": "34", "gan": 47, "c_yr": 6, "c_wd": 0, "trap": false, "tags": ["1-pos Chạm 9", "Đầu 3 gan 31d", "Đuôi 9 Thứ Tư (7)", "Tổng 2 (1 cầu 3d)"]}, {"num": "73", "score": 6.5, "tong": "0", "bo": "23", "gan": 58, "c_yr": 1, "c_wd": 0, "trap": false, "tags": ["Đuôi 3 Thứ Tư (6)", "Tổng 0 (1 cầu 3d)", "Tổng 0 gan 20d", "Bộ 23 sau 89"]}, {"num": "52", "score": 6.5, "tong": "7", "bo": "02", "gan": 74, "c_yr": 3, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 5 (4d)", "Đuôi 2 gan 15d", "Đầu 5 Thứ Tư (6)"]}, {"num": "43", "score": 6.5, "tong": "7", "bo": "34", "gan": 97, "c_yr": 3, "c_wd": 1, "trap": false, "tags": ["Chạm 4 (3 cầu 4d)", "Đầu 4 gan 20d", "Đầu 4 Thứ Tư (7)", "Đuôi 3 Thứ Tư (6)"]}, {"num": "55", "score": 6.5, "tong": "0", "bo": "00", "gan": 158, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["Chạm 5 (4d)", "Đầu 5 Thứ Tư (6)", "Tổng 0 (1 cầu 3d)", "Tổng 0 gan 20d"]}, {"num": "05", "score": 6.5, "tong": "5", "bo": "00", "gan": 169, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "Chạm 5 (4d)", "Tổng 5 (1 cầu 3d)", "Tổng 5 sau 89"]}, {"num": "20", "score": 6.5, "tong": "2", "bo": "02", "gan": 228, "c_yr": 1, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 0 (cầu 5d)", "Tổng 2 (1 cầu 3d)"]}, {"num": "31", "score": 6.5, "tong": "4", "bo": "13", "gan": 436, "c_yr": 0, "c_wd": 0, "trap": true, "tags": ["Chạm 1 (4d)", "Đầu 3 gan 31d", "Tổng 4 Thứ Tư (6)", "Tổng 4 sau 89", "Bộ 13 Thứ Tư (6)", "Bộ 13 sau 89", "Bẫy Đại Gan (436d)"]}, {"num": "65", "score": 6.0, "tong": "1", "bo": "01", "gan": 7, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["Chạm 6 (4d)", "Chạm 5 (4d)", "Đầu 6 Thứ Tư (7)", "Tổng 1 (1 cầu 3d)"]}, {"num": "83", "score": 6.0, "tong": "1", "bo": "33", "gan": 14, "c_yr": 8, "c_wd": 1, "trap": false, "tags": ["Chạm 8 (4d)", "Đầu 8 Thứ Tư (7)", "Đuôi 3 Thứ Tư (6)", "Tổng 1 (1 cầu 3d)"]}, {"num": "72", "score": 6.0, "tong": "9", "bo": "22", "gan": 15, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Đuôi 2 gan 15d", "Tổng 9 gan 12d"]}, {"num": "90", "score": 6.0, "tong": "9", "bo": "04", "gan": 36, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["Chạm 0 (cầu 5d)", "1-pos Chạm 9", "Tổng 9 gan 12d"]}, {"num": "66", "score": 6.0, "tong": "2", "bo": "11", "gan": 40, "c_yr": 3, "c_wd": 1, "trap": false, "tags": ["Chạm 6 (4d)", "Đầu 6 Thứ Tư (7)", "Đuôi 6 Thứ Tư (6)", "Tổng 2 (1 cầu 3d)"]}, {"num": "84", "score": 6.0, "tong": "2", "bo": "34", "gan": 161, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 8 (4d)", "Chạm 4 (3 cầu 4d)", "Đầu 8 Thứ Tư (7)", "Tổng 2 (1 cầu 3d)"]}, {"num": "76", "score": 6.0, "tong": "3", "bo": "12", "gan": 214, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 6 (4d)", "Đuôi 6 Thứ Tư (6)", "Tổng 3 (1 cầu 3d)", "Tổng 3 sau 89", "Bộ 12 sau 89"]}, {"num": "95", "score": 5.5, "tong": "4", "bo": "04", "gan": 1, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 5 (4d)", "1-pos Chạm 9", "Tổng 4 Thứ Tư (6)", "Tổng 4 sau 89"]}, {"num": "89", "score": 5.0, "tong": "7", "bo": "34", "gan": 0, "c_yr": 4, "c_wd": 2, "trap": false, "tags": ["Chạm 8 (4d)", "1-pos Chạm 9", "Đầu 8 Thứ Tư (7)", "Đuôi 9 Thứ Tư (7)"]}, {"num": "93", "score": 5.0, "tong": "2", "bo": "34", "gan": 10, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["1-pos Chạm 9", "Đuôi 3 Thứ Tư (6)", "Tổng 2 (1 cầu 3d)"]}, {"num": "77", "score": 5.0, "tong": "4", "bo": "22", "gan": 18, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["Đuôi 7 gan 18d", "Tổng 4 Thứ Tư (6)", "Tổng 4 sau 89"]}, {"num": "11", "score": 5.0, "tong": "2", "bo": "11", "gan": 82, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 1 (4d)", "Đầu 1 Thứ Tư (7)", "Tổng 2 (1 cầu 3d)"]}, {"num": "16", "score": 5.0, "tong": "7", "bo": "11", "gan": 121, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 6 (4d)", "Chạm 1 (4d)", "Đầu 1 Thứ Tư (7)", "Đuôi 6 Thứ Tư (6)"]}, {"num": "34", "score": 4.5, "tong": "7", "bo": "34", "gan": 117, "c_yr": 1, "c_wd": 0, "trap": false, "tags": ["Chạm 4 (3 cầu 4d)", "Đầu 3 gan 31d"]}, {"num": "25", "score": 4.0, "tong": "7", "bo": "02", "gan": 9, "c_yr": 4, "c_wd": 0, "trap": false, "tags": ["Chạm 2 (3 cầu 4d)", "Chạm 5 (4d)"]}, {"num": "75", "score": 4.0, "tong": "2", "bo": "02", "gan": 27, "c_yr": 3, "c_wd": 1, "trap": false, "tags": ["Chạm 5 (4d)", "Tổng 2 (1 cầu 3d)"]}, {"num": "61", "score": 4.0, "tong": "7", "bo": "11", "gan": 52, "c_yr": 4, "c_wd": 1, "trap": false, "tags": ["Chạm 6 (4d)", "Chạm 1 (4d)", "Đầu 6 Thứ Tư (7)"]}, {"num": "74", "score": 4.0, "tong": "1", "bo": "24", "gan": 298, "c_yr": 1, "c_wd": 0, "trap": true, "tags": ["Chạm 4 (3 cầu 4d)", "Tổng 1 (1 cầu 3d)", "Bộ 24 sau 89", "Bẫy Đại Gan (298d)"]}, {"num": "27", "score": 4.0, "tong": "9", "bo": "22", "gan": 311, "c_yr": 1, "c_wd": 0, "trap": true, "tags": ["Chạm 2 (3 cầu 4d)", "Đuôi 7 gan 18d", "Tổng 9 gan 12d", "Bẫy Đại Gan (311d)"]}, {"num": "70", "score": 3.5, "tong": "7", "bo": "02", "gan": 126, "c_yr": 2, "c_wd": 0, "trap": false, "tags": ["Chạm 0 (cầu 5d)"]}, {"num": "07", "score": 3.0, "tong": "7", "bo": "02", "gan": 432, "c_yr": 0, "c_wd": 0, "trap": true, "tags": ["Chạm 0 (cầu 5d)", "Đuôi 7 gan 18d", "Bẫy Đại Gan (432d)"]}, {"num": "98", "score": 2.0, "tong": "7", "bo": "34", "gan": 641, "c_yr": 0, "c_wd": 0, "trap": true, "tags": ["Chạm 8 (4d)", "1-pos Chạm 9", "Đuôi 8 Thứ Tư (7)", "Bẫy Đại Gan (641d)"]}], "weekday_matrix": [{"weekday": "Thứ Hai", "station": "Hà Nội", "n": 46, "top_cang": [["2", 8], ["4", 7], ["5", 6]], "top_tong": [["8", 7], ["5", 6], ["6", 6]], "top_lo": [{"num": "83", "cnt": 20, "pct": 43.5}, {"num": "45", "cnt": 18, "pct": 39.1}, {"num": "57", "cnt": 17, "pct": 37.0}, {"num": "89", "cnt": 17, "pct": 37.0}, {"num": "31", "cnt": 16, "pct": 34.8}], "is_target": false}, {"weekday": "Thứ Ba", "station": "Quảng Ninh", "n": 46, "top_cang": [["0", 7], ["4", 6], ["6", 6]], "top_tong": [["9", 8], ["0", 8], ["1", 7]], "top_lo": [{"num": "62", "cnt": 18, "pct": 39.1}, {"num": "10", "cnt": 16, "pct": 34.8}, {"num": "91", "cnt": 16, "pct": 34.8}, {"num": "47", "cnt": 15, "pct": 32.6}, {"num": "63", "cnt": 15, "pct": 32.6}], "is_target": false}, {"weekday": "Thứ Tư", "station": "Bắc Ninh", "n": 45, "top_cang": [["1", 9], ["3", 6], ["5", 6]], "top_tong": [["6", 8], ["8", 6], ["4", 6]], "top_lo": [{"num": "48", "cnt": 17, "pct": 37.8}, {"num": "95", "cnt": 16, "pct": 35.6}, {"num": "60", "cnt": 16, "pct": 35.6}, {"num": "02", "cnt": 16, "pct": 35.6}, {"num": "20", "cnt": 16, "pct": 35.6}], "is_target": true}, {"weekday": "Thứ Năm", "station": "Hà Nội", "n": 46, "top_cang": [["1", 7], ["0", 6], ["5", 6]], "top_tong": [["2", 9], ["5", 8], ["4", 6]], "top_lo": [{"num": "96", "cnt": 18, "pct": 39.1}, {"num": "99", "cnt": 17, "pct": 37.0}, {"num": "94", "cnt": 17, "pct": 37.0}, {"num": "06", "cnt": 17, "pct": 37.0}, {"num": "60", "cnt": 16, "pct": 34.8}], "is_target": false}, {"weekday": "Thứ Sáu", "station": "Hải Phòng", "n": 47, "top_cang": [["1", 9], ["7", 8], ["4", 7]], "top_tong": [["1", 8], ["4", 7], ["6", 6]], "top_lo": [{"num": "09", "cnt": 22, "pct": 46.8}, {"num": "46", "cnt": 19, "pct": 40.4}, {"num": "54", "cnt": 19, "pct": 40.4}, {"num": "81", "cnt": 17, "pct": 36.2}, {"num": "77", "cnt": 17, "pct": 36.2}], "is_target": false}, {"weekday": "Thứ Bảy", "station": "Nam Định", "n": 47, "top_cang": [["8", 10], ["4", 7], ["7", 6]], "top_tong": [["5", 8], ["4", 7], ["3", 6]], "top_lo": [{"num": "68", "cnt": 20, "pct": 42.6}, {"num": "48", "cnt": 19, "pct": 40.4}, {"num": "52", "cnt": 18, "pct": 38.3}, {"num": "14", "cnt": 18, "pct": 38.3}, {"num": "94", "cnt": 18, "pct": 38.3}], "is_target": false}, {"weekday": "Chủ Nhật", "station": "Thái Bình", "n": 47, "top_cang": [["9", 8], ["3", 6], ["4", 6]], "top_tong": [["0", 8], ["6", 6], ["1", 6]], "top_lo": [{"num": "38", "cnt": 19, "pct": 40.4}, {"num": "17", "cnt": 18, "pct": 38.3}, {"num": "03", "cnt": 18, "pct": 38.3}, {"num": "69", "cnt": 16, "pct": 34.0}, {"num": "09", "cnt": 16, "pct": 34.0}], "is_target": false}], "recent_30": [{"date": "24/11/2026", "date_iso": "2026-11-24", "weekday": "Thứ 3", "station": "Quảng Ninh", "db": "17489", "de": "89", "cang": "4", "tong": "7", "bo": "34", "p1": "26330", "loto": ["89", "30", "15", "85", "75", "84", "95", "78", "99", "23", "88", "53", "83", "00", "11", "79", "65", "49", "67", "53", "49", "19", "24", "98", "27", "40", "63"]}, {"date": "23/11/2026", "date_iso": "2026-11-23", "weekday": "Thứ 2", "station": "Hà Nội", "db": "94495", "de": "95", "cang": "4", "tong": "4", "bo": "04", "p1": "61045", "loto": ["95", "45", "23", "61", "51", "36", "63", "24", "61", "71", "89", "94", "50", "00", "26", "09", "79", "28", "21", "35", "12", "75", "89", "50", "51", "52", "57"]}, {"date": "22/11/2026", "date_iso": "2026-11-22", "weekday": "Chủ Nhật", "station": "Thái Bình", "db": "92286", "de": "86", "cang": "2", "tong": "4", "bo": "13", "p1": "08621", "loto": ["86", "21", "82", "49", "04", "61", "92", "00", "96", "91", "08", "74", "48", "69", "32", "08", "49", "73", "17", "43", "59", "08", "96", "14", "99", "64", "13"]}, {"date": "21/11/2026", "date_iso": "2026-11-21", "weekday": "Thứ 7", "station": "Nam Định", "db": "06804", "de": "04", "cang": "8", "tong": "4", "bo": "04", "p1": "37886", "loto": ["04", "86", "28", "33", "67", "08", "91", "45", "08", "07", "83", "31", "92", "45", "06", "63", "75", "22", "06", "62", "25", "45", "01", "56", "04", "57", "11"]}, {"date": "20/11/2026", "date_iso": "2026-11-20", "weekday": "Thứ 6", "station": "Hải Phòng", "db": "10760", "de": "60", "cang": "7", "tong": "6", "bo": "01", "p1": "34387", "loto": ["60", "87", "78", "92", "28", "26", "60", "19", "87", "44", "17", "20", "09", "92", "96", "84", "94", "89", "51", "92", "49", "84", "02", "68", "95", "46", "19"]}, {"date": "19/11/2026", "date_iso": "2026-11-19", "weekday": "Thứ 5", "station": "Hà Nội", "db": "15178", "de": "78", "cang": "1", "tong": "5", "bo": "23", "p1": "12262", "loto": ["78", "62", "25", "43", "84", "76", "97", "57", "40", "36", "58", "33", "52", "52", "63", "17", "29", "96", "29", "32", "68", "92", "63", "65", "34", "73", "14"]}, {"date": "18/11/2026", "date_iso": "2026-11-18", "weekday": "Thứ 4", "station": "Bắc Ninh", "db": "21915", "de": "15", "cang": "9", "tong": "6", "bo": "01", "p1": "47995", "loto": ["15", "95", "10", "14", "17", "14", "60", "99", "76", "02", "33", "00", "48", "12", "42", "15", "00", "06", "52", "68", "47", "45", "45", "66", "71", "01", "86"]}, {"date": "17/11/2026", "date_iso": "2026-11-17", "weekday": "Thứ 3", "station": "Quảng Ninh", "db": "29865", "de": "65", "cang": "8", "tong": "1", "bo": "01", "p1": "39320", "loto": ["65", "20", "69", "24", "05", "08", "29", "39", "35", "32", "76", "67", "67", "50", "62", "91", "17", "33", "46", "06", "48", "52", "73", "29", "57", "44", "70"]}, {"date": "16/11/2026", "date_iso": "2026-11-16", "weekday": "Thứ 2", "station": "Hà Nội", "db": "97403", "de": "03", "cang": "4", "tong": "3", "bo": "03", "p1": "48014", "loto": ["03", "14", "54", "48", "23", "32", "04", "91", "32", "06", "06", "45", "29", "32", "79", "12", "86", "07", "60", "26", "59", "41", "69", "47", "78", "97", "65"]}, {"date": "15/11/2026", "date_iso": "2026-11-15", "weekday": "Chủ Nhật", "station": "Thái Bình", "db": "61225", "de": "25", "cang": "2", "tong": "7", "bo": "02", "p1": "83438", "loto": ["25", "38", "93", "72", "83", "64", "26", "80", "80", "97", "03", "45", "83", "23", "23", "86", "39", "36", "09", "85", "40", "82", "69", "44", "12", "25", "65"]}, {"date": "14/11/2026", "date_iso": "2026-11-14", "weekday": "Thứ 7", "station": "Nam Định", "db": "20893", "de": "93", "cang": "8", "tong": "2", "bo": "34", "p1": "14291", "loto": ["93", "91", "12", "90", "26", "34", "38", "77", "65", "40", "90", "14", "20", "60", "56", "76", "15", "48", "78", "16", "11", "98", "17", "31", "28", "73", "48"]}, {"date": "13/11/2026", "date_iso": "2026-11-13", "weekday": "Thứ 6", "station": "Hải Phòng", "db": "75451", "de": "51", "cang": "4", "tong": "6", "bo": "01", "p1": "73501", "loto": ["51", "01", "12", "32", "67", "24", "12", "99", "91", "79", "09", "68", "65", "62", "00", "31", "04", "29", "53", "35", "46", "99", "98", "23", "00", "57", "61"]}, {"date": "12/11/2026", "date_iso": "2026-11-12", "weekday": "Thứ 5", "station": "Hà Nội", "db": "43454", "de": "54", "cang": "4", "tong": "9", "bo": "04", "p1": "20276", "loto": ["54", "76", "09", "63", "89", "69", "53", "03", "81", "96", "01", "20", "91", "07", "32", "92", "01", "24", "85", "25", "36", "72", "92", "48", "27", "33", "99"]}, {"date": "11/11/2026", "date_iso": "2026-11-11", "weekday": "Thứ 4", "station": "Bắc Ninh", "db": "74129", "de": "29", "cang": "1", "tong": "1", "bo": "24", "p1": "97579", "loto": ["29", "79", "60", "80", "49", "93", "46", "06", "72", "71", "60", "05", "76", "68", "94", "78", "04", "24", "88", "97", "14", "93", "10", "51", "34", "12", "95"]}, {"date": "10/11/2026", "date_iso": "2026-11-10", "weekday": "Thứ 3", "station": "Quảng Ninh", "db": "73683", "de": "83", "cang": "6", "tong": "1", "bo": "33", "p1": "25992", "loto": ["83", "92", "01", "18", "41", "89", "06", "94", "23", "35", "89", "00", "39", "68", "70", "57", "14", "50", "94", "47", "68", "93", "07", "14", "00", "83", "56"]}, {"date": "09/11/2026", "date_iso": "2026-11-09", "weekday": "Thứ 2", "station": "Hà Nội", "db": "03372", "de": "72", "cang": "3", "tong": "9", "bo": "22", "p1": "38696", "loto": ["72", "96", "10", "90", "75", "04", "51", "31", "12", "83", "81", "77", "26", "58", "88", "20", "88", "25", "96", "53", "72", "86", "32", "92", "59", "52", "83"]}, {"date": "08/11/2026", "date_iso": "2026-11-08", "weekday": "Chủ Nhật", "station": "Thái Bình", "db": "38926", "de": "26", "cang": "9", "tong": "8", "bo": "12", "p1": "80190", "loto": ["26", "90", "38", "01", "56", "59", "17", "70", "07", "28", "97", "32", "05", "04", "28", "04", "45", "96", "79", "44", "08", "82", "51", "47", "87", "89", "41"]}, {"date": "07/11/2026", "date_iso": "2026-11-07", "weekday": "Thứ 7", "station": "Nam Định", "db": "95014", "de": "14", "cang": "0", "tong": "5", "bo": "14", "p1": "68396", "loto": ["14", "96", "08", "11", "77", "56", "90", "62", "04", "14", "99", "63", "60", "00", "57", "71", "34", "23", "26", "73", "63", "53", "62", "86", "16", "12", "43"]}, {"date": "06/11/2026", "date_iso": "2026-11-06", "weekday": "Thứ 6", "station": "Hải Phòng", "db": "62477", "de": "77", "cang": "4", "tong": "4", "bo": "22", "p1": "07782", "loto": ["77", "82", "10", "87", "22", "13", "29", "72", "06", "34", "19", "84", "34", "28", "78", "06", "99", "19", "69", "64", "74", "52", "52", "93", "70", "78", "73"]}, {"date": "05/11/2026", "date_iso": "2026-11-05", "weekday": "Thứ 5", "station": "Hà Nội", "db": "24502", "de": "02", "cang": "5", "tong": "2", "bo": "02", "p1": "42500", "loto": ["02", "00", "23", "56", "81", "35", "30", "49", "93", "19", "34", "71", "07", "33", "52", "83", "94", "30", "44", "40", "34", "94", "67", "63", "53", "03", "16"]}, {"date": "04/11/2026", "date_iso": "2026-11-04", "weekday": "Thứ 4", "station": "Bắc Ninh", "db": "53046", "de": "46", "cang": "0", "tong": "0", "bo": "14", "p1": "03675", "loto": ["46", "75", "64", "86", "46", "48", "87", "40", "76", "83", "87", "84", "26", "17", "02", "59", "67", "17", "24", "90", "88", "62", "17", "79", "13", "35", "92"]}, {"date": "03/11/2026", "date_iso": "2026-11-03", "weekday": "Thứ 3", "station": "Quảng Ninh", "db": "74446", "de": "46", "cang": "4", "tong": "0", "bo": "14", "p1": "97971", "loto": ["46", "71", "24", "55", "86", "94", "13", "10", "90", "11", "16", "47", "90", "94", "01", "71", "50", "14", "94", "65", "56", "51", "14", "00", "13", "98", "34"]}, {"date": "02/11/2026", "date_iso": "2026-11-02", "weekday": "Thứ 2", "station": "Hà Nội", "db": "80129", "de": "29", "cang": "1", "tong": "1", "bo": "24", "p1": "26381", "loto": ["29", "81", "62", "24", "83", "99", "37", "22", "34", "11", "43", "10", "64", "09", "25", "53", "97", "79", "72", "88", "45", "33", "95", "76", "64", "06", "17"]}, {"date": "01/11/2026", "date_iso": "2026-11-01", "weekday": "Chủ Nhật", "station": "Thái Bình", "db": "03917", "de": "17", "cang": "9", "tong": "8", "bo": "12", "p1": "33288", "loto": ["17", "88", "37", "40", "06", "98", "24", "17", "49", "62", "87", "26", "52", "69", "09", "40", "74", "06", "07", "79", "81", "11", "89", "54", "16", "03", "91"]}, {"date": "31/10/2026", "date_iso": "2026-10-31", "weekday": "Thứ 7", "station": "Nam Định", "db": "28457", "de": "57", "cang": "4", "tong": "2", "bo": "02", "p1": "58348", "loto": ["57", "48", "64", "97", "44", "04", "08", "24", "14", "28", "40", "70", "64", "70", "34", "51", "36", "97", "55", "20", "46", "32", "47", "78", "53", "31", "46"]}, {"date": "30/10/2026", "date_iso": "2026-10-30", "weekday": "Thứ 6", "station": "Hải Phòng", "db": "69259", "de": "59", "cang": "2", "tong": "4", "bo": "04", "p1": "87081", "loto": ["59", "81", "63", "53", "52", "06", "42", "04", "03", "14", "23", "37", "70", "12", "60", "47", "33", "65", "71", "75", "57", "36", "24", "94", "77", "48", "25"]}, {"date": "29/10/2026", "date_iso": "2026-10-29", "weekday": "Thứ 5", "station": "Hà Nội", "db": "53401", "de": "01", "cang": "4", "tong": "1", "bo": "01", "p1": "47745", "loto": ["01", "45", "88", "37", "05", "92", "17", "06", "25", "81", "52", "34", "00", "27", "85", "23", "84", "52", "49", "51", "59", "26", "69", "96", "49", "18", "55"]}, {"date": "28/10/2026", "date_iso": "2026-10-28", "weekday": "Thứ 4", "station": "Bắc Ninh", "db": "74175", "de": "75", "cang": "1", "tong": "2", "bo": "02", "p1": "18190", "loto": ["75", "90", "31", "68", "39", "73", "08", "41", "27", "88", "48", "83", "50", "61", "28", "17", "85", "52", "75", "61", "01", "97", "49", "58", "30", "05", "41"]}, {"date": "27/10/2026", "date_iso": "2026-10-27", "weekday": "Thứ 3", "station": "Quảng Ninh", "db": "44691", "de": "91", "cang": "6", "tong": "0", "bo": "14", "p1": "89116", "loto": ["91", "16", "73", "01", "85", "69", "34", "24", "76", "72", "93", "79", "28", "19", "32", "66", "93", "69", "96", "34", "47", "86", "07", "19", "41", "91", "06"]}, {"date": "26/10/2026", "date_iso": "2026-10-26", "weekday": "Thứ 2", "station": "Hà Nội", "db": "13221", "de": "21", "cang": "2", "tong": "3", "bo": "12", "p1": "82697", "loto": ["21", "97", "64", "28", "25", "97", "26", "10", "89", "76", "23", "44", "38", "13", "35", "31", "47", "47", "34", "50", "04", "43", "94", "92", "66", "69", "82"]}]};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// Tab switching
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+    btn.classList.add("active");
+    $("tab-" + btn.dataset.tab).classList.add("active");
+  });
+});
+
+function renderAll() {
+  const m = DATA.meta;
+  const L = DATA.latest;
+
+  $("hdr-sub").textContent = `Cập nhật lúc ${m.generated_at} · Mục tiêu: ${m.target_weekday} ${m.target_date} (Đài ${m.target_station})`;
+  $("hdr-pills").innerHTML = `
+    <span class="pill accent">Kho: ${m.total_draws.toLocaleString("vi-VN")} kỳ (2014–${m.year})</span>
+    <span class="pill green">${m.year}: ${m.year_draws} kỳ</span>
+    <span class="pill amber">Nền BTL ${m.baseline_btl}% · STL ${m.baseline_stl}%</span>
+  `;
+
+  $("note-year").textContent = m.year;
+  $("note-btl").textContent = m.baseline_btl;
+  $("note-stl").textContent = m.baseline_stl;
+  $("lo-target-badge").textContent = `${m.target_weekday} ${m.target_date}`;
+  $("de-target-badge").textContent = `Đài ${m.target_station}`;
+  $("wd-title-badge").textContent = `${DATA.weekday.name} — ${DATA.weekday.station} (N=${DATA.weekday.n})`;
+  $("bn-de-badge").textContent = `Đề ${L.de}`;
+  $("wm-year").textContent = m.year;
+
+  // KPI cards
+  const camTxt = [
+    L.cam_dau.length ? `Đầu câm: ${L.cam_dau.join(", ")}` : "Không câm Đầu",
+    L.cam_duoi.length ? `Đuôi câm: ${L.cam_duoi.join(", ")}` : "Không câm Đuôi",
+  ].join(" · ");
+  const multTxt = L.multi_hits.length ? L.multi_hits.map((x) => `${x.num}×${x.cnt}`).join(", ") : "Không có";
+
+  $("kpi-cards").innerHTML = `
+    <div class="card">
+      <div class="kpi-lbl">Kỳ Gần Nhất (${esc(L.date)} — ${esc(L.weekday)})</div>
+      <div class="kpi-val" style="color:#f87171">${esc(L.db)}</div>
+      <div class="kpi-sub">Đề <strong>${esc(L.de)}</strong> · Càng <strong>${esc(L.cang)}</strong> · Tổng <strong>${esc(L.tong)}</strong> · Bộ <strong>${esc(L.bo)}</strong> · G1 <span class="mono">${esc(L.p1)}</span></div>
+    </div>
+    <div class="card">
+      <div class="kpi-lbl">Biến Cố Kỳ Trước</div>
+      <div class="kpi-val" style="font-size:1.15rem;color:#fcd34d">${esc(camTxt)}</div>
+      <div class="kpi-sub">&gt;1 nháy: <strong>${esc(multTxt)}</strong></div>
+    </div>
+    <div class="card">
+      <div class="kpi-lbl">Pascal ĐB+G1 (${m.year}: ${m.pascal_pct}%)</div>
+      <div class="kpi-val" style="color:#7dd3fc">${esc(L.pascal_dbg1)} <span style="font-size:.95rem;color:var(--muted)">(STL ${esc(L.stl_pascal_dbg1)})</span></div>
+      <div class="kpi-sub">Hiệu suất năm ${m.year}: <strong>${m.pascal_hits}/${m.pascal_total}</strong> · Pascal ĐB: <strong>${esc(L.pascal_db)}</strong></div>
+    </div>
+    <div class="card">
+      <div class="kpi-lbl">Nhịp Đề 30 Kỳ Gần Nhất</div>
+      <div class="kpi-val" style="color:#86efac">TB ${DATA.gan.warm_30.avg}d</div>
+      <div class="kpi-sub">≤50d: <strong>${DATA.gan.warm_30.le50}/30</strong> · ≤100d: <strong>${DATA.gan.warm_30.le100}/30</strong> · ≥200d: <strong>${DATA.gan.warm_30.ge200}/30</strong></div>
+    </div>
+  `;
+
+  // Top 15 Lo
+  $("tbl-top-lo").innerHTML = DATA.scores_lo_all.slice(0, 15).map((r, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><span class="num-badge ${r.trap ? "trap" : i < 5 ? "top" : ""}">${r.num}</span></td>
+      <td><strong>${r.score.toFixed(1)}</strong></td>
+      <td>${r.gan}d</td>
+      <td>${r.c15} / ${r.c30}</td>
+      <td>${r.c_wd}/${r.wd_n}</td>
+      <td>${r.tags.map((t) => `<span class="tag ${t.includes("Bẫy") ? "warn" : ""}">${esc(t)}</span>`).join("")}</td>
+    </tr>
+  `).join("");
+
+  // Top 16 De
+  $("tbl-top-de").innerHTML = DATA.scores_de_all.slice(0, 16).map((r, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><span class="num-badge ${r.trap ? "trap" : i < 5 ? "top" : ""}">${r.num}</span></td>
+      <td><strong>${r.score.toFixed(1)}</strong></td>
+      <td>T${r.tong} / B${r.bo}</td>
+      <td>${r.gan}d</td>
+      <td>${r.tags.map((t) => `<span class="tag ${t.includes("Bẫy") ? "warn" : ""}">${esc(t)}</span>`).join("")}</td>
+    </tr>
+  `).join("");
+
+  // Quick cards
+  const topTongGan = DATA.gan.tong.slice(0, 3).map((x) => `T${x.digit} (${x.cur}d)`).join(", ");
+  const topCangGan = DATA.gan.cang.slice(0, 3).map((x) => `C${x.digit} (${x.cur}d)`).join(", ");
+  const topTongWd = DATA.weekday.tong.slice(0, 3).map((x) => `T${x[0]} (${x[1]}x)`).join(", ");
+  const topCangWd = DATA.weekday.cang.slice(0, 3).map((x) => `C${x[0]} (${x[1]}x)`).join(", ");
+  const topCham = DATA.bridges.cham_dist.slice(0, 4).map((x) => `Chạm ${x[0]} (${x[1]} cầu)`).join(", ");
+  $("quick-tong-cang").innerHTML = `
+    <p><strong>Vua Tổng ${esc(DATA.weekday.name)}:</strong> ${esc(topTongWd)}</p>
+    <p><strong>Top Gan Tổng:</strong> ${esc(topTongGan)}</p>
+    <p><strong>Vua Càng ${esc(DATA.weekday.name)}:</strong> ${esc(topCangWd)}</p>
+    <p><strong>Top Gan Càng:</strong> ${esc(topCangGan)}</p>
+    <p><strong>Phân bố Cầu Chạm ≥4d:</strong> ${esc(topCham || "Chưa có")}</p>
+  `;
+
+  $("quick-pascal").innerHTML = `
+    <p><strong>Pascal ĐB+G1:</strong> <span class="num-badge top">${esc(L.pascal_dbg1)}</span> (STL ${esc(L.stl_pascal_dbg1)})</p>
+    <p><strong>Pascal ĐB:</strong> <span class="num-badge">${esc(L.pascal_db)}</span> (STL ${esc(L.stl_pascal_db)})</p>
+    <p><strong>Cầu kẹp X-AB-X (${esc(L.date)}):</strong></p>
+    <div>${L.keps.length ? L.keps.map((k) => `<span class="tag">${esc(k.pos)}: ${esc(k.raw)} → <strong>${esc(k.pair)}</strong></span>`).join("") : '<span class="tag">Không có cầu kẹp kỳ này</span>'}</div>
+  `;
+
+  const loTraps = DATA.gan.lo_top12.filter((x) => x.cur >= 12);
+  const deTraps = DATA.gan.de_top15.filter((x) => x.cur >= 280);
+  $("quick-traps").innerHTML = `
+    <p><strong>Lô Gan ≥ 12 ngày (tránh ép BTL):</strong><br/>${loTraps.length ? loTraps.map((x) => `<span class="tag warn">${x.num} (${x.cur}d)</span>`).join("") : "Không có"}</p>
+    <p><strong>Đề Đại Gan ≥ 280 ngày (chỉ theo dõi):</strong><br/>${deTraps.map((x) => `<span class="tag warn">${x.num} (${x.cur}d)</span>`).join("")}</p>
+  `;
+
+  // Tab 2: Cam Rebound
+  $("cam-rebound-container").innerHTML = DATA.cam_rebound.length
+    ? DATA.cam_rebound.map((blk) => `
+      <div class="card">
+        <h2>🔔 Bật Lại Sau Câm ${esc(blk.kind)} ${esc(blk.digit)}</h2>
+        ${blk.frames.map((f) => `
+          <h3>${esc(f.label)} (N=${f.n} · Về ${f.hit_days}/${f.n}, TB ${f.avg} nháy)</h3>
+          <div><strong>Top số:</strong> ${f.top_nums.map((x) => `<span class="tag"><strong>${x.num}</strong> ${x.cnt} (${x.pct}%)</span>`).join("")}</div>
+          <div style="margin-top:4px"><strong>Top STL:</strong> ${f.top_stl.map((x) => `<span class="tag">${x.pair} (${x.pct}%)</span>`).join("")}</div>
+        `).join("")}
+      </div>
+    `).join("")
+    : `<div class="card"><h2>🔔 Câm Đầu / Đuôi</h2><p style="color:var(--muted)">Kỳ gần nhất (${esc(L.date)}) không có Đầu câm hoặc Đuôi câm.</p></div>`;
+
+  // Bridges tables
+  $("tbl-stl-streak").innerHTML = DATA.bridges.stl_streak.map((r) => `
+    <tr><td><span class="num-badge top">${esc(r.pair)}</span></td><td><strong>${r.streak}d</strong></td><td>${r.h30}/30</td><td>${r.h_yr} (${r.yr_pct}%)</td><td class="mono">${esc(r.pos)}</td></tr>
+  `).join("") || '<tr><td colspan="5">Không có cầu ≥7d</td></tr>';
+
+  $("tbl-stl-rate").innerHTML = DATA.bridges.stl_rate.map((r) => `
+    <tr><td><span class="num-badge">${esc(r.pair)}</span></td><td><strong>${r.h_yr} (${r.yr_pct}%)</strong></td><td>${r.streak}d</td><td class="mono">${esc(r.pos)}</td></tr>
+  `).join("") || '<tr><td colspan="4">Không có cầu đạt ngưỡng</td></tr>';
+
+  $("tbl-btl").innerHTML = DATA.bridges.btl.map((r) => `
+    <tr><td><span class="num-badge top">${esc(r.num)}</span></td><td><strong>${r.streak}d</strong></td><td>${r.h30}/30</td><td>${r.h_yr} (${r.yr_pct}%)</td><td class="mono">${esc(r.pos)}</td></tr>
+  `).join("") || '<tr><td colspan="5">Không có cầu ≥5d</td></tr>';
+
+  $("box-de-bridges").innerHTML = `
+    <p><strong>Cầu Chạm ≥4d:</strong><br/>${DATA.bridges.cham.map((r) => `<span class="tag">Chạm <strong>${r.digit}</strong> (${r.streak}d · năm ${r.h_yr})</span>`).join("") || "Không có"}</p>
+    <p><strong>Cầu Tổng ≥3d:</strong><br/>${DATA.bridges.tong.map((r) => `<span class="tag">Tổng <strong>${r.digit}</strong> (${r.streak}d · năm ${r.h_yr})</span>`).join("") || "Không có"}</p>
+    <p><strong>Cầu Càng ≥3d:</strong><br/>${DATA.bridges.cang.map((r) => `<span class="tag">Càng <strong>${r.digit}</strong> (${r.streak}d · năm ${r.h_yr})</span>`).join("") || "Không có"}</p>
+  `;
+
+  // Weekday Profile
+  const W = DATA.weekday;
+  $("box-weekday-profile").innerHTML = `
+    <p><strong>Top Lô:</strong> ${W.top_lo.map((x) => `<span class="tag"><strong>${x.num}</strong> ${x.cnt}/${W.n} (${x.pct}%)</span>`).join("")}</p>
+    <p><strong>Top STL:</strong> ${W.top_stl.map((x) => `<span class="tag"><strong>${x.pair}</strong> (${x.pct}%)</span>`).join("")}</p>
+    <p><strong>Top Xiên 2:</strong> ${W.top_xien.map((x) => `<span class="tag">${x.pair} (${x.pct}%)</span>`).join("")}</p>
+    <p><strong>Top ≥2 nháy:</strong> ${W.top_mult.map((x) => `<span class="tag">${x[0]} (${x[1]}x)</span>`).join("")}</p>
+    <p><strong>Đầu Đề:</strong> ${W.dau.slice(0,5).map((x) => `Đ${x[0]}(${x[1]})`).join(", ")} · <strong>Đuôi Đề:</strong> ${W.duoi.slice(0,5).map((x) => `Đ${x[0]}(${x[1]})`).join(", ")}</p>
+    <p><strong>Tổng Đề:</strong> ${W.tong.slice(0,5).map((x) => `T${x[0]}(${x[1]})`).join(", ")} · <strong>Bộ:</strong> ${W.bo.slice(0,5).map((x) => `B${x[0]}(${x[1]})`).join(", ")}</p>
+    <p><strong>Càng Đề:</strong> ${W.cang.slice(0,5).map((x) => `C${x[0]}(${x[1]})`).join(", ")}</p>
+  `;
+
+  // Bac nho
+  $("box-bacnho").innerHTML = DATA.bacnho.map((b) => `
+    <h3>${esc(b.label)} (N=${b.n})</h3>
+    <p><strong>Top Lô:</strong> ${b.top_lo.map((x) => `<span class="tag"><strong>${x.num}</strong> (${x.pct}%)</span>`).join("")}</p>
+    <p><strong>Top STL:</strong> ${b.top_stl.map((x) => `<span class="tag">${x.pair} (${x.pct}%)</span>`).join("")}</p>
+    <p><strong>Tổng:</strong> ${b.tong.map((x) => `T${x[0]}(${x[1]})`).join(", ")} · <strong>Bộ:</strong> ${b.bo.map((x) => `B${x[0]}(${x[1]})`).join(", ")} · <strong>Càng:</strong> ${b.cang.map((x) => `C${x[0]}(${x[1]})`).join(", ")}</p>
+  `).join("");
+
+  // Tab 3: Gan tables
+  const renderGanRows = (arr) => arr.map((r) => {
+    const pct = Math.min(100, Math.round((r.cur / Math.max(1, r.max13)) * 100));
+    return `<tr>
+      <td><span class="num-badge ${r.cur >= 15 ? "trap" : ""}">${r.digit}</span></td>
+      <td><strong>${r.cur}d</strong></td>
+      <td>${r.max13}d</td>
+      <td style="min-width:120px">${pct}%<div class="bar-wrap"><div class="bar-fill ${pct >= 30 ? "amber" : ""}" style="width:${pct}%"></div></div></td>
+      <td class="mono">${esc(r.last_date)} (${esc(r.last_db)})</td>
+    </tr>`;
+  }).join("");
+  $("tbl-gan-tong").innerHTML = renderGanRows(DATA.gan.tong);
+  $("tbl-gan-cang").innerHTML = renderGanRows(DATA.gan.cang);
+
+  $("tbl-de-gan15").innerHTML = DATA.gan.de_top15.map((r) => `
+    <tr><td><span class="num-badge ${r.cur >= 280 ? "trap" : ""}">${r.num}</span></td><td><strong>${r.cur} ngày</strong></td><td class="mono">${esc(r.last_date)}</td></tr>
+  `).join("");
+
+  $("tbl-lo-gan12").innerHTML = DATA.gan.lo_top12.map((r) => `
+    <tr><td><span class="num-badge ${r.cur >= 12 ? "trap" : ""}">${r.num}</span></td><td><strong>${r.cur} ngày</strong></td><td class="mono">${esc(r.last_date)}</td></tr>
+  `).join("");
+
+  $("box-dau-duoi-gan").innerHTML = `
+    <p><strong>Đầu gan:</strong> ${DATA.gan.dau.slice(0,5).map((r) => `<span class="tag ${r.cur >= 15 ? "warn" : ""}">Đầu ${r.digit}: ${r.cur}d/${r.max13}d</span>`).join("")}</p>
+    <p><strong>Đuôi gan:</strong> ${DATA.gan.duoi.slice(0,5).map((r) => `<span class="tag ${r.cur >= 15 ? "warn" : ""}">Đuôi ${r.digit}: ${r.cur}d/${r.max13}d</span>`).join("")}</p>
+  `;
+
+  $("box-lo-hot").innerHTML = `
+    <h3>15 ngày gần nhất</h3>
+    <div>${DATA.gan.lo_hot15.map((x) => `<span class="tag"><strong>${x[0]}</strong> ×${x[1]}</span>`).join("")}</div>
+    <h3>30 ngày gần nhất</h3>
+    <div>${DATA.gan.lo_hot30.map((x) => `<span class="tag"><strong>${x[0]}</strong> ×${x[1]}</span>`).join("")}</div>
+  `;
+
+  $("tbl-weekday-matrix").innerHTML = DATA.weekday_matrix.map((w) => `
+    <tr style="${w.is_target ? "background:rgba(56,189,248,0.1)" : ""}">
+      <td><strong>${esc(w.weekday)}</strong> — ${esc(w.station)} ${w.is_target ? '<span class="pill accent">Hôm nay</span>' : ""}</td>
+      <td>${w.n}</td>
+      <td>${w.top_cang.map((x) => `C${x[0]}(${x[1]})`).join(", ")}</td>
+      <td>${w.top_tong.map((x) => `T${x[0]}(${x[1]})`).join(", ")}</td>
+      <td>${w.top_lo.map((x) => `<span class="tag"><strong>${x.num}</strong> ${x.pct}%</span>`).join("")}</td>
+    </tr>
+  `).join("");
+
+  // Tab 4: Select draws & history
+  $("eval-draw-select").innerHTML = DATA.recent_30.map((d, idx) =>
+    `<option value="${idx}">${d.date} (${d.weekday}) — ĐB ${d.db}</option>`
+  ).join("");
+
+  renderHistory("");
+  renderEvalLog();
+}
+
+// Instant lookup 00-99
+const loMap = Object.fromEntries(DATA.scores_lo_all.map((r) => [r.num, r]));
+const deMap = Object.fromEntries(DATA.scores_de_all.map((r) => [r.num, r]));
+
+function runLookup() {
+  const raw = $("lookup-input").value;
+  const nums = [...new Set((raw.match(/\d{1,2}/g) || []).map((x) => x.padStart(2, "0")))];
+  if (!nums.length) {
+    $("lookup-results").innerHTML = '<p style="color:var(--muted)">Hãy nhập ít nhất một số từ 00 đến 99.</p>';
+    return;
+  }
+  $("lookup-results").innerHTML = `
+    <div class="scroll-x">
+      <table>
+        <thead><tr><th>Số</th><th>Điểm Lô</th><th>Gan Lô</th><th>Tín hiệu Lô</th><th>Điểm Đề</th><th>Gan Đề</th><th>Tổng / Bộ</th><th>Tín hiệu Đề</th></tr></thead>
+        <tbody>
+          ${nums.map((num) => {
+            const lr = loMap[num], dr = deMap[num];
+            if (!lr || !dr) return "";
+            return `<tr>
+              <td><span class="num-badge ${lr.trap || dr.trap ? "trap" : "top"}">${num}</span></td>
+              <td><strong>${lr.score.toFixed(1)}</strong></td>
+              <td>${lr.gan}d</td>
+              <td>${lr.tags.map((t) => `<span class="tag ${t.includes("Bẫy") ? "warn" : ""}">${esc(t)}</span>`).join("") || "-"}</td>
+              <td><strong>${dr.score.toFixed(1)}</strong></td>
+              <td>${dr.gan}d</td>
+              <td>T${dr.tong} / B${dr.bo}</td>
+              <td>${dr.tags.map((t) => `<span class="tag ${t.includes("Bẫy") ? "warn" : ""}">${esc(t)}</span>`).join("") || "-"}</td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+$("btn-lookup").addEventListener("click", runLookup);
+$("lookup-input").addEventListener("keydown", (e) => { if (e.key === "Enter") runLookup(); });
+
+// Evaluator & P/L calculator (Lô 22.5 ăn 80 | Đề 1 ăn 84 | X2 1 ăn 14 | 3C 1 ăn 800)
+const LOG_KEY = "xsmb_v2_eval_log";
+function parseNums(str, len = 2) {
+  const re = new RegExp(`\\d{1,${len}}`, "g");
+  return [...new Set((str.match(re) || []).map((x) => x.padStart(len, "0")))];
+}
+function parsePairs(str) {
+  const matches = str.match(/\d{2}\s*[-–/]\s*\d{2}/g) || [];
+  return matches.map((m) => m.replace(/\s+/g, "").replace(/[–/]/g, "-"));
+}
+
+function evaluateCurrent() {
+  const draw = DATA.recent_30[Number($("eval-draw-select").value) || 0];
+  const lotoCounts = {};
+  draw.loto.forEach((x) => { lotoCounts[x] = (lotoCounts[x] || 0) + 1; });
+
+  const los = parseNums($("eval-lo").value, 2);
+  const loPts = Number($("eval-lo-pts").value) || 0;
+  const des = parseNums($("eval-de").value, 2);
+  const deK = Number($("eval-de-k").value) || 0;
+  const xiens = parsePairs($("eval-xien").value);
+  const xienK = Number($("eval-xien-k").value) || 0;
+  const c3s = parseNums($("eval-3c").value, 3);
+  const c3K = Number($("eval-3c-k").value) || 0;
+
+  let loHits = [], totalNhay = 0;
+  los.forEach((n) => {
+    if (lotoCounts[n]) {
+      loHits.push(`${n}×${lotoCounts[n]}`);
+      totalNhay += lotoCounts[n];
+    }
+  });
+  const deHit = des.includes(draw.de);
+  const c3Target = draw.db.slice(-3);
+  const c3Hit = c3s.includes(c3Target);
+  const xienHits = xiens.filter((p) => {
+    const [a, b] = p.split("-");
+    return lotoCounts[a] > 0 && lotoCounts[b] > 0;
+  });
+
+  const cost = los.length * loPts * 22.5 + des.length * deK + xiens.length * xienK + c3s.length * c3K;
+  const win = totalNhay * loPts * 80 + (deHit ? deK * 84 : 0) + xienHits.length * xienK * 14 + (c3Hit ? c3K * 800 : 0);
+  const net = win - cost;
+
+  const summary = {
+    date: draw.date,
+    db: draw.db,
+    lo_str: loHits.length ? loHits.join(", ") : `0/${los.length}`,
+    de_3c: `${deHit ? "Trúng Đề " + draw.de : "Trượt Đề"}${c3s.length ? (c3Hit ? " · Trúng 3C " + c3Target : " · Trượt 3C") : ""}`,
+    xien_str: xiens.length ? `${xienHits.length}/${xiens.length} (${xienHits.join(", ") || "-"})` : "-",
+    cost: Math.round(cost * 10) / 10,
+    win: Math.round(win * 10) / 10,
+    net: Math.round(net * 10) / 10,
+  };
+
+  $("eval-output").innerHTML = `
+    <div class="grid g-4" style="margin-top:8px">
+      <div class="card"><div class="kpi-lbl">Kỳ Đối Soát</div><div class="kpi-val" style="font-size:1.15rem">${draw.date} · ĐB ${draw.db}</div><div class="kpi-sub">Đề ${draw.de} · 3 Càng ${c3Target}</div></div>
+      <div class="card"><div class="kpi-lbl">Kết Quả Trúng</div><div class="kpi-val" style="font-size:1.05rem">${esc(summary.lo_str)}</div><div class="kpi-sub">${esc(summary.de_3c)} · X2: ${esc(summary.xien_str)}</div></div>
+      <div class="card"><div class="kpi-lbl">Tổng Vốn / Tiền Thu</div><div class="kpi-val" style="font-size:1.15rem">${summary.cost.toLocaleString("vi-VN")}k / ${summary.win.toLocaleString("vi-VN")}k</div><div class="kpi-sub">Tỷ lệ: Lô 22.5→80 · Đề 84 · X2 14 · 3C 800</div></div>
+      <div class="card"><div class="kpi-lbl">Lãi / Lỗ Ròng</div><div class="kpi-val ${net >= 0 ? "profit-pos" : "profit-neg"}">${net >= 0 ? "+" : ""}${summary.net.toLocaleString("vi-VN")}k</div></div>
+    </div>
+  `;
+  return summary;
+}
+
+function getEvalLog() {
+  try { return JSON.parse(localStorage.getItem(LOG_KEY) || "[]"); } catch { return []; }
+}
+function renderEvalLog() {
+  const logs = getEvalLog();
+  if (!logs.length) {
+    $("tbl-eval-log").innerHTML = '<tr><td colspan="8" style="color:var(--muted)">Chưa có bản ghi đối soát nào. Nhập dàn ở trên rồi bấm "Lưu vào Nhật ký".</td></tr>';
+    return;
+  }
+  const totalNet = logs.reduce((acc, x) => acc + (x.net || 0), 0);
+  $("tbl-eval-log").innerHTML = logs.map((r) => `
+    <tr>
+      <td class="mono">${esc(r.date)}</td>
+      <td class="mono"><strong>${esc(r.db)}</strong></td>
+      <td>${esc(r.lo_str)}</td>
+      <td>${esc(r.de_3c)}</td>
+      <td>${esc(r.xien_str)}</td>
+      <td>${r.cost}</td>
+      <td>${r.win}</td>
+      <td class="${r.net >= 0 ? "profit-pos" : "profit-neg"}">${r.net >= 0 ? "+" : ""}${r.net}</td>
+    </tr>
+  `).join("") + `
+    <tr style="background:rgba(56,189,248,0.08)">
+      <td colspan="7"><strong>TỔNG CỘNG (${logs.length} phiên đã lưu)</strong></td>
+      <td class="${totalNet >= 0 ? "profit-pos" : "profit-neg"}">${totalNet >= 0 ? "+" : ""}${Math.round(totalNet * 10) / 10}k</td>
+    </tr>
+  `;
+}
+
+$("btn-eval-run").addEventListener("click", evaluateCurrent);
+$("btn-eval-save").addEventListener("click", () => {
+  const s = evaluateCurrent();
+  const logs = getEvalLog();
+  logs.unshift(s);
+  localStorage.setItem(LOG_KEY, JSON.stringify(logs.slice(0, 120)));
+  renderEvalLog();
+});
+$("btn-clear-log").addEventListener("click", () => {
+  localStorage.removeItem(LOG_KEY);
+  renderEvalLog();
+});
+$("btn-export-log").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(getEvalLog(), null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "xsmb_eval_log.json";
+  a.click();
+});
+
+// History filter
+function renderHistory(q) {
+  const s = q.trim().toLowerCase();
+  const rows = DATA.recent_30.filter((d) =>
+    !s || d.date.toLowerCase().includes(s) || d.db.includes(s) || d.loto.includes(s.padStart(2, "0"))
+  );
+  $("tbl-history").innerHTML = rows.map((d) => `
+    <tr>
+      <td class="mono">${esc(d.date)}</td>
+      <td>${esc(d.weekday)} (${esc(d.station)})</td>
+      <td class="mono" style="color:#f87171;font-weight:700">${esc(d.db)}</td>
+      <td><span class="num-badge top">${esc(d.de)}</span></td>
+      <td>${esc(d.cang)}</td>
+      <td>${esc(d.tong)}</td>
+      <td class="mono">${esc(d.p1)}</td>
+      <td class="mono" style="font-size:0.78rem;color:var(--muted)">${esc([...d.loto].sort().join(", "))}</td>
+    </tr>
+  `).join("");
+}
+$("hist-filter").addEventListener("input", (e) => renderHistory(e.target.value));
+
+renderAll();
+</script>
+</body>
+</html>

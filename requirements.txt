@@ -1,0 +1,3 @@
+# Chỉ cần cho chức năng xuất 2 file Excel (.xlsx).
+# Engine phân tích (scripts/xsmb_engine.py) và đồng bộ JSON (--no-excel) dùng 100% thư viện chuẩn Python 3.
+openpyxl>=3.1.0
