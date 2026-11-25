@@ -1023,7 +1023,7 @@ function renderAll() {
   $("lo-target-badge").textContent = `${m.target_weekday} ${m.target_date}`;
   $("de-target-badge").textContent = `Đài ${m.target_station}`;
   $("wd-title-badge").textContent = `${DATA.weekday.name} — ${DATA.weekday.station} (N=${DATA.weekday.n})`;
-  $("bn-de-badge").textContent = `Đề ${L.de}`;
+  $("bn-de-badge").textContent = L.de;
   $("wm-year").textContent = m.year;
 
   // KPI cards
