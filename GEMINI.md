@@ -2,6 +2,10 @@
 
 Tài liệu này tự động kích hoạt trên mọi phiên hội thoại trong dự án. Tuân thủ nghiêm ngặt toàn bộ quy tắc dữ liệu, phương pháp luận v2 và kỷ luật đối soát bên dưới.
 
+## Lệnh Nhanh Trong Chat
+- **`/updatexs`** (hoặc *"cập nhật xs"*, *"cập nhật kết quả"*): Chạy ngay `python scripts/auto_update_xsmb.py --no-excel` (tự động đồng bộ JSON từ `xoso.com.vn` chuẩn giờ `UTC+7` + tự dựng lại `index.html`), sau đó đọc `.agents/skills/updatexs/SKILL.md` để tóm tắt kỳ mới và cập nhật 2 ma trận trong `docs/`.
+- **`/xsmb-analyze`** (hoặc *"phân tích hôm nay"*, *"chốt số"*): Đọc `.agents/skills/xsmb-analyze/SKILL.md` và chạy `python scripts/xsmb_engine.py` để phân tích đủ 6 trụ cột v2.
+
 ---
 
 ## 1. Bảng Quy Đổi Tỷ Lệ Tham Chiếu (Khi Tính Vốn / Đánh Giá Hiệu Quả)
