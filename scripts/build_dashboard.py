@@ -378,6 +378,84 @@ def build_payload(cache_path: str, target_str: str = None) -> dict:
             }
         )
 
+    # Build weekly calendar matrix for the current ISO year (Mon..Sun per week)
+    yr_int = int(cur_year)
+    iso_weeks = {}
+    prev_tong, prev_cang = None, None
+    for d in draws:
+        dt = datetime.date.fromisoformat(d["date_iso"])
+        iso_yr, iso_wk, iso_wd = dt.isocalendar()
+        is_rep_t = prev_tong is not None and d["db_sum"] == prev_tong
+        is_rep_c = prev_cang is not None and d["db_cang"] == prev_cang
+        prev_tong, prev_cang = d["db_sum"], d["db_cang"]
+        if iso_yr != yr_int:
+            continue
+        if iso_wk not in iso_weeks:
+            mon = dt - datetime.timedelta(days=iso_wd - 1)
+            sun = mon + datetime.timedelta(days=6)
+            iso_weeks[iso_wk] = {
+                "week": iso_wk,
+                "range": f"{mon.strftime('%d/%m')}–{sun.strftime('%d/%m')}",
+                "mon_iso": mon.isoformat(),
+                "days": [None] * 7,
+            }
+        iso_weeks[iso_wk]["days"][iso_wd - 1] = {
+            "date": d["date"][:5],
+            "full_date": d["date"],
+            "db": d["db"],
+            "de": d["db_tail2"],
+            "cang": d["db_cang"],
+            "tong": d["db_sum"],
+            "rep_t": is_rep_t,
+            "rep_c": is_rep_c,
+        }
+
+    # Ensure target_date's week exists (in case target_date starts a brand new Monday)
+    t_iso_yr, t_iso_wk, t_iso_wd = target_date.isocalendar()
+    if t_iso_yr == yr_int and t_iso_wk not in iso_weeks:
+        mon = target_date - datetime.timedelta(days=t_iso_wd - 1)
+        sun = mon + datetime.timedelta(days=6)
+        iso_weeks[t_iso_wk] = {
+            "week": t_iso_wk,
+            "range": f"{mon.strftime('%d/%m')}–{sun.strftime('%d/%m')}",
+            "mon_iso": mon.isoformat(),
+            "days": [None] * 7,
+        }
+
+    weekly_matrix = []
+    for wk_num in sorted(iso_weeks.keys()):
+        wobj = iso_weeks[wk_num]
+        days = wobj["days"]
+        t_vals = [x["tong"] for x in days if x]
+        c_vals = [x["cang"] for x in days if x]
+        notes_t, notes_c = [], []
+        if len(t_vals) < 7 and wk_num != t_iso_wk:
+            notes_t.append("Nghỉ lễ/Tết")
+            notes_c.append("Nghỉ lễ/Tết")
+        # Detect consecutive runs (Kép / Tam hoa) inside the week
+        for arr, nlist, lbl in [(t_vals, notes_t, "Tổng"), (c_vals, notes_c, "Càng")]:
+            run_v, run_n = None, 0
+            best_v, best_n = None, 0
+            for v in arr:
+                if v == run_v:
+                    run_n += 1
+                else:
+                    run_v, run_n = v, 1
+                if run_n > best_n:
+                    best_v, best_n = run_v, run_n
+            if best_n >= 3:
+                nlist.append(f"Tam hoa {lbl} {best_v}")
+            elif best_n == 2:
+                nlist.append(f"Bệt {lbl} {best_v}")
+            mc = Counter(arr).most_common(1)
+            if mc and mc[0][1] >= 3 and best_n < 3:
+                nlist.append(f"{lbl} {mc[0][0]} ({mc[0][1]}x)")
+        wobj["note_tong"] = " · ".join(notes_t)
+        wobj["note_cang"] = " · ".join(notes_c)
+        wobj["is_current"] = (t_iso_yr == yr_int and wk_num == t_iso_wk)
+        wobj["target_wd"] = (t_iso_wd - 1) if wobj["is_current"] else -1
+        weekly_matrix.append(wobj)
+
     recent_30 = [
         {
             "date": d["date"],
@@ -497,6 +575,7 @@ def build_payload(cache_path: str, target_str: str = None) -> dict:
         "scores_lo_all": lo_scores,
         "scores_de_all": de_scores,
         "weekday_matrix": weekday_matrix,
+        "weekly_matrix": weekly_matrix,
         "recent_30": recent_30,
     }
 
@@ -710,6 +789,80 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .profit-pos { color: #4ade80; font-weight: 800; }
   .profit-neg { color: #f87171; font-weight: 800; }
   .scroll-x { overflow-x: auto; }
+  .mx-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .mx-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .mx-group .lbl { font-size: 0.78rem; color: var(--muted); font-weight: 700; margin-right: 4px; }
+  .chip-btn {
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--panel2);
+    color: var(--text);
+    border-radius: 7px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: all .12s;
+  }
+  .chip-btn:hover { border-color: var(--accent); color: #7dd3fc; }
+  .chip-btn.active { background: #0284c7; border-color: #38bdf8; color: #fff; }
+  .chip-btn.digit { min-width: 30px; padding: 5px 8px; text-align: center; }
+  .mx-table th, .mx-table td { text-align: center; padding: 6px 5px; font-variant-numeric: tabular-nums; }
+  .mx-table th.col-today, .mx-table td.col-today { background: rgba(56, 189, 248, 0.08); }
+  .mx-table td.wk-col { font-weight: 700; color: #93c5fd; white-space: nowrap; }
+  .mx-table td.rng-col { font-size: 0.76rem; color: var(--muted); white-space: nowrap; }
+  .mx-table td.note-col { text-align: left; font-size: 0.76rem; color: var(--muted); min-width: 110px; }
+  .mx-cell {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 32px;
+    padding: 3px 6px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    background: rgba(30, 41, 59, 0.65);
+    transition: transform .1s, opacity .15s, box-shadow .15s;
+  }
+  .mx-cell .v-main { font-size: 0.96rem; font-weight: 800; line-height: 1.1; }
+  .mx-cell .v-sub { font-size: 0.68rem; color: var(--muted); margin-top: 2px; line-height: 1; }
+  .mx-cell.even { color: #7dd3fc; }
+  .mx-cell.odd { color: #fde68a; }
+  .mx-cell.rep { border-color: rgba(245, 158, 11, 0.75); box-shadow: inset 0 0 0 1px rgba(245,158,11,0.35); }
+  .mx-cell.hl {
+    background: linear-gradient(135deg, #059669, #10b981) !important;
+    color: #fff !important;
+    border-color: #6ee7b7 !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.55);
+    transform: scale(1.06);
+  }
+  .mx-cell.hl .v-sub { color: #ecfdf5 !important; }
+  .mx-cell.dim { opacity: 0.24; }
+  .mx-cell.pending {
+    background: rgba(56, 189, 248, 0.16);
+    border: 1px dashed #38bdf8;
+    color: #38bdf8;
+    font-weight: 800;
+  }
+  .mx-cell.empty { background: transparent; color: #475569; }
+  .mx-table tfoot td {
+    background: rgba(15, 23, 42, 0.9);
+    border-top: 2px solid var(--border);
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #86efac;
+  }
   footer {
     max-width: 1320px;
     margin: 0 auto 30px;
@@ -732,6 +885,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   </div>
   <nav class="tabs">
     <button class="tab-btn active" data-tab="overview">🎯 Tổng Quan & Chấm Điểm</button>
+    <button class="tab-btn" data-tab="matrix">🗓️ Ma Trận Tổng & Càng</button>
     <button class="tab-btn" data-tab="bridges">🔗 Cầu 107 Vị Trí & Bạc Nhớ</button>
     <button class="tab-btn" data-tab="gan">📉 Ma Trận Gan & 7 Nhà Đài</button>
     <button class="tab-btn" data-tab="evaluate">✅ Tra Cứu & Tự Đánh Giá Mỗi Ngày</button>
@@ -791,7 +945,44 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     </div>
   </section>
 
-  <!-- TAB 2: BRIDGES & BAC NHO -->
+  <!-- TAB 2: WEEKLY MATRIX TONG & CANG -->
+  <section id="tab-matrix" class="tab-panel">
+    <div class="mx-toolbar">
+      <div class="mx-group">
+        <span class="lbl">Chế độ xem:</span>
+        <button class="chip-btn active" data-mx-mode="side">📊 Song song (Tổng & Càng)</button>
+        <button class="chip-btn" data-mx-mode="tong">🔢 Chỉ Ma Trận Tổng</button>
+        <button class="chip-btn" data-mx-mode="cang">🎯 Chỉ Ma Trận Càng 3</button>
+        <button class="chip-btn" data-mx-mode="combined">🔀 Gộp (Càng · Tổng)</button>
+      </div>
+      <div class="mx-group">
+        <span class="lbl">Phạm vi:</span>
+        <button class="chip-btn active" data-mx-range="all">Cả năm (<span id="mx-total-wks"></span> tuần)</button>
+        <button class="chip-btn" data-mx-range="16">16 tuần gần nhất</button>
+        <button class="chip-btn" data-mx-range="8">8 tuần gần nhất</button>
+        <button class="chip-btn" id="btn-mx-order">⬇️ Mới nhất trên cùng</button>
+      </div>
+      <div class="mx-group" style="width:100%">
+        <span class="lbl">Tô sáng nhanh chữ số:</span>
+        <button class="chip-btn digit active" data-mx-digit="all">Tất cả</button>
+        <button class="chip-btn digit" data-mx-digit="0">0</button>
+        <button class="chip-btn digit" data-mx-digit="1">1</button>
+        <button class="chip-btn digit" data-mx-digit="2">2</button>
+        <button class="chip-btn digit" data-mx-digit="3">3</button>
+        <button class="chip-btn digit" data-mx-digit="4">4</button>
+        <button class="chip-btn digit" data-mx-digit="5">5</button>
+        <button class="chip-btn digit" data-mx-digit="6">6</button>
+        <button class="chip-btn digit" data-mx-digit="7">7</button>
+        <button class="chip-btn digit" data-mx-digit="8">8</button>
+        <button class="chip-btn digit" data-mx-digit="9">9</button>
+        <span style="font-size:0.76rem;color:var(--muted);margin-left:8px">Chú thích: <span style="color:#7dd3fc">■ Chẵn</span> · <span style="color:#fde68a">■ Lẻ</span> · <span style="color:#f59e0b">▢ Viền cam = Bệt ngày liền trước</span> · Di chuột vào ô để xem ĐB đầy đủ</span>
+      </div>
+    </div>
+
+    <div id="mx-content"></div>
+  </section>
+
+  <!-- TAB 3: BRIDGES & BAC NHO -->
   <section id="tab-bridges" class="tab-panel">
     <div class="grid g-2" id="cam-rebound-container"></div>
 
@@ -1213,7 +1404,152 @@ function renderAll() {
 
   renderHistory("");
   renderEvalLog();
+  renderMatrixTab();
 }
+
+// Weekly Matrix (Tong & Cang) state and renderer
+const mxState = { mode: "side", range: "all", digit: "all", newestFirst: true };
+const WD_SHORT = ["T2 (HN)", "T3 (QN)", "T4 (BN)", "T5 (HN)", "T6 (HP)", "T7 (NĐ)", "CN (TB)"];
+
+function buildSingleMatrixCard(kind, weeks) {
+  const isTong = kind === "tong";
+  const isComb = kind === "combined";
+  const title = isComb
+    ? `🔀 Ma Trận Gộp Càng 3 · Tổng Đề (${DATA.meta.year})`
+    : isTong
+      ? `🔢 Ma Trận Tổng Đặc Biệt (${DATA.meta.year})`
+      : `🎯 Ma Trận Càng 3 Đặc Biệt (${DATA.meta.year})`;
+  const topGan = isTong
+    ? DATA.gan.tong.slice(0, 3).map((x) => `T${x.digit}(${x.cur}d)`).join(" · ")
+    : DATA.gan.cang.slice(0, 3).map((x) => `C${x.digit}(${x.cur}d)`).join(" · ");
+  const badge = isComb ? `${weeks.length} tuần · Càng | Tổng` : `Gan cao nhất: ${topGan}`;
+
+  const targetCol = (DATA.weekly_matrix.find((w) => w.is_current) || {}).target_wd ?? -1;
+
+  // Footer: Top Vua of each weekday column (from DATA.weekday_matrix)
+  const footerCells = DATA.weekday_matrix.map((wm, idx) => {
+    const cls = idx === targetCol ? "col-today" : "";
+    if (isComb) {
+      const cTop = wm.top_cang[0], tTop = wm.top_tong[0];
+      return `<td class="${cls}">C${cTop[0]}(${cTop[1]}) · T${tTop[0]}(${tTop[1]})</td>`;
+    }
+    const topArr = isTong ? wm.top_tong : wm.top_cang;
+    return `<td class="${cls}">${topArr[0][0]} (${topArr[0][1]}x)<br/><span style="color:var(--muted);font-weight:400">${topArr[1][0]}(${topArr[1][1]})</span></td>`;
+  }).join("");
+
+  const rowsHtml = weeks.map((w) => {
+    const cells = w.days.map((cell, wdIdx) => {
+      const tdCls = wdIdx === targetCol ? "col-today" : "";
+      if (!cell) {
+        if (w.is_current && wdIdx === w.target_wd) {
+          return `<td class="${tdCls}" title="Kỳ quay mục tiêu: ${esc(DATA.meta.target_date)}"><div class="mx-cell pending"><span class="v-main">?</span><span class="v-sub">Hôm nay</span></div></td>`;
+        }
+        return `<td class="${tdCls}"><div class="mx-cell empty">—</div></td>`;
+      }
+      const tip = `${cell.full_date} (${WD_SHORT[wdIdx]}) | ĐB: ${cell.db} | Càng ${cell.cang} · Đề ${cell.de} · Tổng ${cell.tong}`;
+      if (isComb) {
+        const matchD = mxState.digit === "all" || cell.cang === mxState.digit || cell.tong === mxState.digit;
+        const cls = ["mx-cell", (cell.rep_c || cell.rep_t) ? "rep" : "", mxState.digit !== "all" ? (matchD ? "hl" : "dim") : ""].join(" ");
+        return `<td class="${tdCls}" title="${esc(tip)}"><div class="${cls}"><span class="v-main"><span style="color:#7dd3fc">${cell.cang}</span>·<span style="color:#fde68a">${cell.tong}</span></span><span class="v-sub">${cell.de}</span></div></td>`;
+      }
+      const val = isTong ? cell.tong : cell.cang;
+      const isRep = isTong ? cell.rep_t : cell.rep_c;
+      const parity = Number(val) % 2 === 0 ? "even" : "odd";
+      const matchD = mxState.digit === "all" || val === mxState.digit;
+      const hlCls = mxState.digit !== "all" ? (matchD ? "hl" : "dim") : "";
+      const subTxt = mxState.mode !== "side" ? (isTong ? cell.de : cell.db) : cell.de;
+      return `<td class="${tdCls}" title="${esc(tip)}"><div class="mx-cell ${parity} ${isRep ? "rep" : ""} ${hlCls}"><span class="v-main">${val}</span><span class="v-sub">${subTxt}</span></div></td>`;
+    }).join("");
+
+    const note = isComb
+      ? [w.note_cang, w.note_tong].filter(Boolean).join(" | ")
+      : (isTong ? w.note_tong : w.note_cang);
+    const wkLabel = `T${String(w.week).padStart(2, "0")}`;
+    return `<tr>
+      <td class="wk-col">${wkLabel}</td>
+      <td class="rng-col">${esc(w.range)}</td>
+      ${cells}
+      <td class="note-col">${esc(note || (w.is_current ? "Tuần hiện tại" : ""))}</td>
+    </tr>`;
+  }).join("");
+
+  return `
+    <div class="card">
+      <h2>${title} <span class="pill accent">${esc(badge)}</span></h2>
+      <div class="scroll-x">
+        <table class="mx-table">
+          <thead>
+            <tr>
+              <th>Tuần</th>
+              <th>Ngày</th>
+              ${WD_SHORT.map((lbl, idx) => `<th class="${idx === targetCol ? "col-today" : ""}">${lbl}</th>`).join("")}
+              <th style="text-align:left">Hình thế</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2" style="color:#7dd3fc">👑 Vua cột ${DATA.meta.year}</td>
+              ${footerCells}
+              <td style="text-align:left;color:var(--muted)">Cột xanh = Thứ hôm nay</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderMatrixTab() {
+  const allWks = DATA.weekly_matrix || [];
+  $("mx-total-wks").textContent = allWks.length;
+  let wks = allWks.slice();
+  if (mxState.range !== "all") {
+    wks = wks.slice(-Number(mxState.range));
+  }
+  if (mxState.newestFirst) wks.reverse();
+
+  const container = $("mx-content");
+  if (mxState.mode === "side") {
+    container.innerHTML = `<div class="grid g-2">${buildSingleMatrixCard("tong", wks)}${buildSingleMatrixCard("cang", wks)}</div>`;
+  } else if (mxState.mode === "tong") {
+    container.innerHTML = buildSingleMatrixCard("tong", wks);
+  } else if (mxState.mode === "cang") {
+    container.innerHTML = buildSingleMatrixCard("cang", wks);
+  } else {
+    container.innerHTML = buildSingleMatrixCard("combined", wks);
+  }
+}
+
+document.querySelectorAll("[data-mx-mode]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("[data-mx-mode]").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    mxState.mode = btn.dataset.mxMode;
+    renderMatrixTab();
+  });
+});
+document.querySelectorAll("[data-mx-range]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("[data-mx-range]").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    mxState.range = btn.dataset.mxRange;
+    renderMatrixTab();
+  });
+});
+document.querySelectorAll("[data-mx-digit]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("[data-mx-digit]").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+    mxState.digit = btn.dataset.mxDigit;
+    renderMatrixTab();
+  });
+});
+$("btn-mx-order").addEventListener("click", () => {
+  mxState.newestFirst = !mxState.newestFirst;
+  $("btn-mx-order").textContent = mxState.newestFirst ? "⬇️ Mới nhất trên cùng" : "⬆️ Tuần 01 trên cùng";
+  renderMatrixTab();
+});
 
 // Instant lookup 00-99
 const loMap = Object.fromEntries(DATA.scores_lo_all.map((r) => [r.num, r]));
