@@ -1,5 +1,5 @@
 # BẢNG MA TRẬN CÀNG 3 ĐẶC BIỆT LỊCH SỬ (NĂM 2026)
-### *Cơ sở dữ liệu: 324 kỳ quay năm 2026 & 4.637 kỳ quay lịch sử 13 năm (2014 – 2026) — Cập nhật đến 24/11/2026*
+### *Cơ sở dữ liệu: 325 kỳ quay năm 2026 & 4.638 kỳ quay lịch sử 13 năm (2014 – 2026) — Cập nhật đến 25/11/2026*
 
 ---
 
@@ -56,50 +56,51 @@ Bảng dưới đây thống kê **chữ số Càng Đề (hàng trăm của Gi�
 | **45** | 02/11 – 08/11 | **1** | **4** | **0** | **5** | **4** | **0** | **9** | Đề bệt 46-46, bệt Càng 4 |
 | **46** | 09/11 – 15/11 | **3** | **6** | **1** | **4** | **4** | **8** | **2** | Bệt Càng 4, nổ Càng 8 & Càng 2 cuối tuần |
 | **47** | 16/11 – 22/11 | **4** | **8** | **9** | **1** | **7** | **8** | **2** | Xả Càng 7 (`34d`), Càng 8 T7 lần `10`, bệt Tổng 4 cuối tuần |
-| **48** | 23/11 – 29/11 | **4** | **4** | **[ ? ]** | | | | | **Bệt Càng 4 (`94495 -> 17489`); Hôm nay: T4 — Bắc Ninh** |
+| **48** | 23/11 – 29/11 | **4** | **4** | **3** | **[ ? ]** | | | | **Bệt Càng 4 (`94495 -> 17489`), T4 xả Càng 3 (`05302`, gan `15d`); Hôm nay: T5 — Hà Nội** |
 
 ---
 
-## 2. BẢNG THỐNG KÊ GAN CÀNG ĐỀ (TÍNH ĐẾN 24/11/2026)
+## 2. BẢNG THỐNG KÊ GAN CÀNG ĐỀ (TÍNH ĐẾN 25/11/2026)
 
 | Thứ hạng | Chữ số Càng | Số ngày chưa về (Mức Gan) | Kỷ lục Max 13 năm | Lần gần nhất xuất hiện | Đánh giá áp lực thực tế |
 | :---: | :---: | :---: | :---: | :---: | :--- |
-| 🥇 **Top 1** | **Càng 5** | **19 ngày** | 62 ngày (2021–2022) | Ngày 05/11/2026 (ĐB `24502`) | **Gan nhất hiện tại + Đồng Top 2 Thứ Tư Bắc Ninh (`6/45`)** |
-| 🥈 **Top 2** | **Càng 0** | **17 ngày** | 59 ngày (2024) | Ngày 07/11/2026 (ĐB `95014`) | Có cầu Càng `3d` `(G5.4[1]+ĐB[2])%10` (`30/323`), ít về T4 (`2/45`) |
-| 🥉 **Top 3** | **Càng 3** | **15 ngày** | 56 ngày (2026) | Ngày 09/11/2026 (ĐB `03372`) | **Đồng Top 2 Thứ Tư Bắc Ninh (`6/45`) + Có cầu Càng `3d`** |
-| 4 | **Càng 6** | **14 ngày** | 63 ngày (2023) | Ngày 10/11/2026 (ĐB `73683`) | Nhịp đều Thứ Tư (`5/45`) |
-| 5 | **Càng 9** | **6 ngày** | 69 ngày (2024) | Ngày 18/11/2026 (ĐB `21915`) | **Sở hữu `2` cầu Càng `3d` hiệu suất cao (`41/323` & `40/323`)** |
-| 6 | **Càng 1** | **5 ngày** | 50 ngày (2017) | Ngày 19/11/2026 (ĐB `15178`) | **VUA CÀNG THỨ TƯ BẮC NINH (`9/45`, áp đảo toàn bảng)** |
-| 7 | **Càng 7** | **4 ngày** | 63 ngày (2018) | Ngày 20/11/2026 (ĐB `10760`) | Nhịp nhẹ Thứ Tư (`3/45`) |
-| 8 | **Càng 8** | **3 ngày** | 48 ngày (2025) | Ngày 21/11/2026 (ĐB `06804`) | Có cầu Càng `3d` (`37/323`), ít về Thứ Tư (`2/45`) |
-| 9 | **Càng 2** | **2 ngày** | 78 ngày (2021) | Ngày 22/11/2026 (ĐB `92286`) | **Cầu Càng `3d` hiệu suất cao nhất (`42/323`) + `5/45` Thứ Tư** |
-| 10 | **Càng 4** | **0 ngày** | 80 ngày (2015–2016) | Ngày 24/11/2026 (ĐB `17489`) | Vừa bệt 2 ngày liên tiếp (`23–24/11`: `94495 -> 17489`) |
+| 🥇 **Top 1** | **Càng 5** | **20 ngày** | 62 ngày (2021–2022) | Ngày 05/11/2026 (ĐB `24502`) | **Gan nhất hiện tại + Đồng Top 2 Thứ Năm Hà Nội (`6/46`) + Có cầu `3d` (`38/324`)** |
+| 🥈 **Top 2** | **Càng 0** | **18 ngày** | 59 ngày (2024) | Ngày 07/11/2026 (ĐB `95014`) | **Đồng Top 2 Thứ Năm Hà Nội (`6/46`) + Cầu Càng thông `4d` duy nhất + 1 cầu `3d`** |
+| 🥉 **Top 3** | **Càng 6** | **15 ngày** | 63 ngày (2023) | Ngày 10/11/2026 (ĐB `73683`) | **Đồng Top 2 Thứ Năm Hà Nội (`6/46`) + Sở hữu `4` cầu Càng `3d` (đỉnh `40/324`)** |
+| 4 | **Càng 9** | **7 ngày** | 69 ngày (2024) | Ngày 18/11/2026 (ĐB `21915`) | Nhịp nhẹ Thứ Năm (`3/46`) |
+| 5 | **Càng 1** | **6 ngày** | 50 ngày (2017) | Ngày 19/11/2026 (ĐB `15178`) | **VUA CÀNG THỨ NĂM HÀ NỘI (`7/46`)** |
+| 6 | **Càng 7** | **5 ngày** | 63 ngày (2018) | Ngày 20/11/2026 (ĐB `10760`) | Ít về Thứ Năm (`2/46`) |
+| 7 | **Càng 8** | **4 ngày** | 48 ngày (2025) | Ngày 21/11/2026 (ĐB `06804`) | Có cầu Càng `3d` hiệu suất cao (`39/324`), `4/46` Thứ Năm |
+| 8 | **Càng 2** | **3 ngày** | 78 ngày (2021) | Ngày 22/11/2026 (ĐB `92286`) | Nhịp đều Thứ Năm (`5/46`) |
+| 9 | **Càng 4** | **1 ngày** | 80 ngày (2015–2016) | Ngày 24/11/2026 (ĐB `17489`) | Vừa bệt 2 ngày liên tiếp (`23–24/11`), `5/46` Thứ Năm |
+| 10 | **Càng 3** | **0 ngày** | 56 ngày (2026) | Ngày 25/11/2026 (ĐB `05302`) | Vừa xả gan `15d` ngày Thứ Tư Bắc Ninh (`05302`), ít về Thứ Năm (`2/46`) |
 
 ---
 
-## 3. THỐNG KÊ TẦN SUẤT CÀNG THEO TỪNG THỨ TRONG TUẦN (NĂM 2026 — 324 KỲ)
+## 3. THỐNG KÊ TẦN SUẤT CÀNG THEO TỪNG THỨ TRONG TUẦN (NĂM 2026 — 325 KỲ)
 
 | Thứ trong tuần | Nhà đài phụ trách | Top 1 Càng hay về | Top 2 Càng hay về | Top 3 Càng hay về | Càng ít về nhất |
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **Thứ Hai** (`N=46`) | **Hà Nội** | 👑 **CÀNG 2** (**8 lần**) | **Càng 4** (**7 lần**) | **Càng 5, 9, 1** (6 lần) | Càng 8, 0 (1 lần) |
 | **Thứ Ba** (`N=46`) | Quảng Ninh | **Càng 0** (7 lần) | **Càng 4, 6** (**6 lần**) | Càng 8, 3, 5, 1 (5 lần) | Càng 9, 7 (2 lần) |
-| **Thứ Tư** (`N=45`) | **Bắc Ninh** | 👑 **CÀNG 1** (**9 lần**) | **Càng 3, 5** (**6 lần**) | **Càng 6, 2** (5 lần) | Càng 8, 0 (2 lần) |
-| **Thứ Năm** (`N=46`) | Hà Nội | 👑 **CÀNG 1** (**7 lần**) | **Càng 0, 5, 6** (6 lần) | **Càng 2, 4** (5 lần) | Càng 7, 3 (2 lần) |
+| **Thứ Tư** (`N=46`) | **Bắc Ninh** | 👑 **CÀNG 1** (**9 lần**) | **Càng 3** (**7 lần**) | **Càng 5** (6 lần) | Càng 8, 0 (2 lần) |
+| **Thứ Năm** (`N=46`) | **Hà Nội** | 👑 **CÀNG 1** (**7 lần**) | **Càng 0, 5, 6** (**6 lần**) | **Càng 2, 4** (5 lần) | Càng 7, 3 (2 lần) |
 | **Thứ Sáu** (`N=47`) | Hải Phòng | 👑 **CÀNG 1** (**9 lần**) | **Càng 7** (**8 lần**) | **Càng 4** (7 lần) | Càng 5, 6 (2 lần) |
 | **Thứ Bảy** (`N=47`) | Nam Định | 👑 **CÀNG 8** (**10 lần**) | **Càng 4** (7 lần) | **Càng 7, 2** (6 lần) | Càng 3, 6 (1 lần) |
 | **Chủ Nhật** (`N=47`) | Thái Bình | **Càng 9** (8 lần) | Càng 3, 4, 2 (6 lần) | Càng 6, 7 (5 lần) | Càng 8 (1 lần) |
 
 ---
 
-## 4. GIẢI MÃ THẾ CỜ CÀNG CHO THỨ TƯ (25/11/2026 — ĐÀI BẮC NINH)
+## 4. GIẢI MÃ THẾ CỜ CÀNG CHO THỨ NĂM (26/11/2026 — ĐÀI HÀ NỘI)
 
-Tuần `48` mở màn bằng cú bệt Càng chẵn **`4 – 4`** (`94495 -> 17489`):
-$$\text{CN (C2: } 92286)\ -\ \text{T2 (C4: } 94495)\ -\ \text{T3 (C4: } 17489)\ \longrightarrow\ \text{T4 Tuần 48 (Bắc Ninh [ ? ])}$$
+Sau cú xả **Càng `3`** (`05302`, cắt gan `15` ngày) tại Thứ Tư Bắc Ninh:
+$$\text{T2 (C4: } 94495)\ -\ \text{T3 (C4: } 17489)\ -\ \text{T4 (C3: } 05302)\ \longrightarrow\ \text{T5 Tuần 48 (Hà Nội [ ? ])}$$
 
-### 🌟 Thế cờ #1: Nhóm Vua Đài Thứ Tư Bắc Ninh $\rightarrow$ **CÀNG 1** (`9/45`) & **CÀNG 5 / 3** (`6/45`)
-* **Càng 1** là Vua Thứ Tư Bắc Ninh (`9/45`, `20.0%`), gan nhẹ `5` ngày.
-* **Càng 5** (gan Top 1 toàn bảng `19` ngày) và **Càng 3** (gan Top 3 `15` ngày + có cầu `3d`) đồng giữ Top 2 đài Bắc Ninh (`6/45`).
+### 🌟 Thế cờ #1: Tam Trụ Gan + Cầu + Đài Thứ Năm Hà Nội $\rightarrow$ **CÀNG 6**, **CÀNG 0** & **CÀNG 5**
+* **Càng `6`** (gan `15d`, `6/46` Thứ Năm) hội tụ tới **4 cầu Càng `3d`**, đỉnh hiệu suất `(G1[3]+G3.6[1])%10` đạt `40/324` (`12.3%`).
+* **Càng `0`** (gan Top 2 `18d`, `6/46` Thứ Năm) sở hữu **cầu Càng thông `4d` duy nhất** `(G5.1[1]+G7.1[0])%10` kèm 1 cầu `3d` (`36/324`).
+* **Càng `5`** (gan Top 1 `20d`, `6/46` Thứ Năm) có thêm cầu `3d` `(G2.2[0]+G3.4[2])%10` đạt `38/324`.
 
-### 🌟 Thế cờ #2: Nhóm Cầu Càng Thông `3` Ngày Hiệu Suất Năm Cao $\rightarrow$ **CÀNG 2** (`42/323`) & **CÀNG 9** (`2` cầu)
-* **Càng 2** dẫn đầu hiệu suất năm trong nhóm cầu `3d` `(G4.3[0]+G5.5[2])%10` (`42/323`, `13.0%`) và có `5/45` kỳ Thứ Tư.
-* **Càng 9** sở hữu **2 cầu Càng thông `3` ngày** đạt hiệu suất cao (`41/323` & `40/323`).
+### 🌟 Thế cờ #2: Vua Đài Thứ Năm & Cầu Hiệu Suất Cao $\rightarrow$ **CÀNG 1** (`7/46`) & **CÀNG 8** (`39/324`)
+* **Càng `1`** dẫn đầu tần suất Thứ Năm Hà Nội năm 2026 (`7/46`, `15.2%`), gan nhẹ `6` ngày.
+* **Càng `8`** sở hữu cầu `3d` `(G5.2[3]+G7.3[0])%10` đạt hiệu suất năm `39/324` (`12.0%`).

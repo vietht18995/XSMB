@@ -1,5 +1,5 @@
 # BẢN ĐỒ TOÀN BỘ MA TRẬN TỔNG ĐẶC BIỆT & SƠ ĐỒ TỔNG THỂ SỰ KIỆN TRÙNG HỢP
-### *Cơ sở dữ liệu: 36 tuần (23/03 – 24/11/2026) | 324 kỳ quay 2026 & 4.637 kỳ quay lịch sử 13 năm (2014 – 2026)*
+### *Cơ sở dữ liệu: 36 tuần (23/03 – 25/11/2026) | 325 kỳ quay 2026 & 4.638 kỳ quay lịch sử 13 năm (2014 – 2026)*
 
 ---
 
@@ -44,7 +44,7 @@ Bảng dưới đây thống kê **chữ số Tổng Đề (hàng chục + hàng
 | **33** | 02/11 – 08/11 | **1** | **0** | **0** | 2 | 4 | 5 | 8 | **Kép Tổng [0 - 0] (Đề 46-46 bệt đúp)** |
 | **34** | 09/11 – 15/11 | **9** | **1** | **1** | **9** | **6** | **2** | **7** | Xả Tổng 6 (`25d`) & Tổng 7 (`42d` via Đề `25`) |
 | **35** | 16/11 – 22/11 | **3** | **1** | **6** | **5** | **6** | **4** | **4** | Bệt Tổng `[4 - 4]` cuối tuần (`04 -> 86` xả đại gan `299d`) |
-| **36** | 23/11 – 29/11 | **4** | **7** | **[ ? ]** | | | | | **Bệt Tổng 4 ngày thứ 3 (`95`), T3 nổ Tổng 7 (`89`); Hôm nay: T4 — Bắc Ninh** |
+| **36** | 23/11 – 29/11 | **4** | **7** | **2** | **[ ? ]** | | | | **T2 bệt Tổng 4 (`95`), T3 Tổng 7 (`89`), T4 Tổng 2 (`02`); Hôm nay: T5 — Hà Nội** |
 
 ---
 
@@ -54,19 +54,18 @@ Bảng dưới đây thống kê **chữ số Tổng Đề (hàng chục + hàng
 flowchart TD
     subgraph G1["GIAI ĐOẠN 1: BỆT TỔNG 4 BA NGÀY LIÊN TIẾP (21/11 - 23/11/2026)"]
         A["21/11: ĐB 06804 (Tổng 4, Càng 8)"] --> B["22/11: ĐB 92286 (Tổng 4, xả đại gan Đề 86 299d)"]
-        B --> C["23/11: ĐB 94495 (Tổng 4 ngày thứ 3, Càng 4; Lô 45 G1, 52, 24, 57, 75)"]
+        B --> C["23/11: ĐB 94495 (Tổng 4 ngày thứ 3, Càng 4)"]
     end
 
-    subgraph G2["GIAI ĐOẠN 2: ĐẢO NHỊP TỔNG LẺ & CÂM ĐUÔI (24/11/2026)"]
-        D["24/11: ĐB 17489 (Đề 89, Tổng 7, bệt Càng 4)"]
-        E["Câm Đuôi 2 & Đuôi 6 ngày 24/11 | Đầu 3 gan 31d, Đầu 4 gan 20d, Đuôi 7 gan 18d"]
+    subgraph G2["GIAI ĐOẠN 2: ĐẢO NHỊP TỔNG 7 -> TỔNG 2 (24/11 - 25/11/2026)"]
+        D["24/11: ĐB 17489 (Đề 89, Tổng 7, bệt Càng 4)"] --> E["25/11: ĐB 05302 (Đề 02, Tổng 2, xả Càng 3 15d; G1 31891)"]
     end
 
-    subgraph G3["GIAI ĐOẠN 3: HỘI TỤ THỨ TƯ BẮC NINH (25/11/2026)"]
-        F["Tổng 6 (Vua T4 8/45 + cầu 3d 43/323) & Tổng 5 (cầu 3d 43/323)"]
-        G["Tổng 8 (Top 2 Gan 16d + Đồng Top 2 T4 6/45) & Tổng 0 (Top 1 Gan 20d + cầu 3d)"]
-        H["Chạm mạnh: Chạm 0 (cầu 5d), Chạm 2 (3 cầu 4d), Chạm 4 (3 cầu 4d)"]
-        F --> I["Khung đối chiếu T4 Bắc Ninh: Tổng 6 - 8 - 0 - 5 | Càng 1 - 5 - 3 - 2 - 9"]
+    subgraph G3["GIAI ĐOẠN 3: HỘI TỤ THỨ NĂM HÀ NỘI (26/11/2026)"]
+        F["Tổng 5 (Top 2 T5 8/46 + cầu Tổng 4d duy nhất) & Tổng 2 (Vua T5 9/46 + 2 cầu 3d)"]
+        G["Tổng 0 (Top 1 Gan 21d + 2 cầu 3d 39/324) & Tổng 8 (Top 2 Gan 17d + cầu 3d)"]
+        H["Chạm mạnh: Chạm 1 (cầu 6d & 5d), Chạm 0 (cầu 5d 77/324 & 4d), Chạm 2 (cầu 4d 76/324)"]
+        F --> I["Khung đối chiếu T5 Hà Nội: Tổng 5 - 0 - 2 - 8 | Càng 6 - 0 - 5 - 1 - 8"]
         G --> I
         H --> I
     end
@@ -77,33 +76,33 @@ flowchart TD
 
 ---
 
-## 3. BẢNG THỐNG KÊ GAN TỔNG HIỆN TẠI (TÍNH ĐẾN 24/11/2026)
+## 3. BẢNG THỐNG KÊ GAN TỔNG HIỆN TẠI (TÍNH ĐẾN 25/11/2026)
 
 | Thứ hạng | Chữ số Tổng Đề | Số ngày chưa về (Mức Gan) | Kỷ lục Max 13 năm | Lần gần nhất xuất hiện | Trạng thái kỹ thuật |
 | :---: | :---: | :---: | :---: | :---: | :--- |
-| 🥇 **TOP 1** | **Tổng 0** | **20 ngày** | 67 ngày (2025) | Ngày 04/11/2026 (ĐB `53046`) | **Gan cao nhất hiện tại + Có cầu Tổng `3d` `(G3.5[1]+G5.5[1])%10`** |
-| 🥈 **TOP 2** | **Tổng 8** | **16 ngày** | 59 ngày (2016) | Ngày 08/11/2026 (ĐB `38926`) | **Đồng Top 2 Thứ Tư Bắc Ninh (`6/45`) + Gan Top 2** |
-| 🥉 **TOP 3** | **Tổng 9** | **12 ngày** | 53 ngày (2023) | Ngày 12/11/2026 (ĐB `43454`) | Nhịp trung bình Thứ Tư (`4/45`) |
-| 4 | **Tổng 2** | **10 ngày** | 64 ngày (2014–2015) | Ngày 14/11/2026 (ĐB `20893`) | Có cầu Tổng `3d` `(G2.1[4]+ĐB[1])%10` (`32/323`) |
-| 5 | **Tổng 3** | **8 ngày** | 67 ngày (2021) | Ngày 16/11/2026 (ĐB `97403`) | Có cầu Tổng `3d` `(G3.3[1]+ĐB[4])%10` (`31/323`) |
-| 6 | **Tổng 1** | **7 ngày** | 63 ngày (2021) | Ngày 17/11/2026 (ĐB `29865`) | Có cầu Tổng `3d` `(G2.1[3]+G3.1[1])%10` (`36/323`) |
-| 7 | **Tổng 5** | **5 ngày** | 58 ngày (2018) | Ngày 19/11/2026 (ĐB `15178`) | **Đồng cầu Tổng `3d` hiệu suất cao nhất (`43/323`) + `5/45` T4** |
-| 8 | **Tổng 6** | **4 ngày** | 66 ngày (2015) | Ngày 20/11/2026 (ĐB `10760`) | **VUA TỔNG THỨ TƯ (`8/45`) + Đồng cầu Tổng `3d` hiệu suất cao nhất (`43/323`)** |
-| 9 | **Tổng 4** | **1 ngày** | 56 ngày (2016) | Ngày 23/11/2026 (ĐB `94495`) | Vừa bệt 3 ngày liên tiếp (`21–23/11`: `04 -> 86 -> 95`) |
-| 10 | **Tổng 7** | **0 ngày** | 58 ngày (2025) | Ngày 24/11/2026 (ĐB `17489`) | Vừa nổ Thứ Ba (`24/11`: Đề `89`) |
+| 🥇 **TOP 1** | **Tổng 0** | **21 ngày** | 67 ngày (2025) | Ngày 04/11/2026 (ĐB `53046`) | **Gan cao nhất hiện tại + Sở hữu `2` cầu Tổng `3d` (`39/324`)** |
+| 🥈 **TOP 2** | **Tổng 8** | **17 ngày** | 59 ngày (2016) | Ngày 08/11/2026 (ĐB `38926`) | **Gan Top 2 + Có cầu Tổng `3d` (`32/324`) + `5/46` Thứ Năm** |
+| 🥉 **TOP 3** | **Tổng 9** | **13 ngày** | 53 ngày (2023) | Ngày 12/11/2026 (ĐB `43454`) | Đồng Top 3 Thứ Năm Hà Nội (`6/46`) |
+| 4 | **Tổng 3** | **9 ngày** | 67 ngày (2021) | Ngày 16/11/2026 (ĐB `97403`) | Nhịp trung bình Thứ Năm (`4/46`) |
+| 5 | **Tổng 1** | **8 ngày** | 63 ngày (2021) | Ngày 17/11/2026 (ĐB `29865`) | Nhịp nhẹ Thứ Năm (`3/46`) |
+| 6 | **Tổng 5** | **6 ngày** | 58 ngày (2018) | Ngày 19/11/2026 (ĐB `15178`) | **Top 2 Thứ Năm (`8/46`) + Cầu Tổng thông `4d` duy nhất `(G2.1[4]+ĐB[1])%10`** |
+| 7 | **Tổng 6** | **5 ngày** | 66 ngày (2015) | Ngày 20/11/2026 (ĐB `10760`) | Ít về Thứ Năm (`2/46`) |
+| 8 | **Tổng 4** | **2 ngày** | 56 ngày (2016) | Ngày 23/11/2026 (ĐB `94495`) | Đồng Top 3 Thứ Năm (`6/46`), vừa bệt 3 ngày (`21–23/11`) |
+| 9 | **Tổng 7** | **1 ngày** | 58 ngày (2025) | Ngày 24/11/2026 (ĐB `17489`) | Nhịp nhẹ Thứ Năm (`3/46`) |
+| 10 | **Tổng 2** | **0 ngày** | 64 ngày (2014–2015) | Ngày 25/11/2026 (ĐB `05302`) | Vừa nổ Thứ Tư (`25/11`: Đề `02`), nhưng là **Vua Tổng Thứ Năm (`9/46`) + `2` cầu `3d`** |
 
 ---
 
-## 4. GIẢI MÃ TRỤC TỔNG CHO THỨ TƯ (25/11/2026 — ĐÀI BẮC NINH)
+## 4. GIẢI MÃ TRỤC TỔNG CHO THỨ NĂM (26/11/2026 — ĐÀI HÀ NỘI)
 
-Sau chuỗi bệt Tổng `4` ba kỳ liên tiếp (`04 -> 86 -> 95`) và nhịp chuyển Tổng lẻ `7` ngày `24/11` (`89`):
-$$\text{CN (T4: 86)}\ \longrightarrow\ \text{T2 (T4: 95)}\ \longrightarrow\ \text{T3 (T7: 89)}\ \longrightarrow\ \text{T4 Tuần 48 (Bắc Ninh [ ? ])}$$
+Sau khi Thứ Tư Bắc Ninh (`25/11`) nổ Đề **`02`** (Tổng `2`, Càng `3`), mạch tuần `48` chuyển sang đài Hà Nội Thứ Năm:
+$$\text{T2 (T4: 95)}\ \longrightarrow\ \text{T3 (T7: 89)}\ \longrightarrow\ \text{T4 (T2: 02)}\ \longrightarrow\ \text{T5 Tuần 48 (Hà Nội [ ? ])}$$
 
-### 🎯 Trục #1: Vua Tổng Thứ Tư & Cầu Hiệu Suất Cao Nhất $\rightarrow$ **TỔNG 6** (`8/45`, cầu `3d` `43/323`) & **TỔNG 5** (`5/45`, cầu `3d` `43/323`)
-* **Tổng `6`** là Vua Tổng đài Bắc Ninh năm 2026 (`8/45`, `17.8%`), đồng thời sở hữu cầu Tổng `3d` `(G3.3[0]+G7.4[1])%10` đạt `43/323` (`13.3%`).
-* **Tổng `5`** có cầu Tổng `3d` `(G2.1[1]+G3.3[0])%10` đồng dẫn đầu hiệu suất năm (`43/323`).
+### 🎯 Trục #1: Cầu Thông Dài Nhất & Nhóm Vua Đài Thứ Năm $\rightarrow$ **TỔNG 5** (`8/46`, cầu `4d`) & **TỔNG 2** (`9/46`, `2` cầu `3d`)
+* **Tổng `5`** giữ Top 2 tần suất Thứ Năm Hà Nội (`8/46`, `17.4%`) và sở hữu **cầu Tổng thông `4d` duy nhất** `(G2.1[4]+ĐB[1])%10` (`33/324`).
+* **Tổng `2`** vừa nổ ngày `25/11` (`02`) nhưng vẫn là **Vua Tổng Thứ Năm (`9/46`, `19.6%`)** kèm **2 cầu Tổng `3d`** (`37/324` & `34/324`), cần lưu ý kịch bản bệt Tổng.
 
-### 🎯 Trục #2: Nhóm Tổng Gan Sâu & Hội Tụ Đài Thứ Tư $\rightarrow$ **TỔNG 8** (`16d`, `6/45` T4) & **TỔNG 0** (`20d`, có cầu `3d`)
-* **Tổng `8`** đang gan Top 2 (`16` ngày) và đồng hạng 2 đài Thứ Tư (`6/45`).
-* **Tổng `0`** gan cao nhất toàn bảng (`20` ngày) và có cầu `3d` hỗ trợ `(G3.5[1]+G5.5[1])%10`.
-* **Lưu ý Chạm:** Cầu Chạm nổi bật nhất sau `24/11` là **Chạm `0`** (duy nhất cầu thông `5d`: `G2.2[2]+G7.4[0]`), **Chạm `2`** (`3` cầu `4d`, `76/323`) và **Chạm `4`** (`3` cầu `4d`, `69/323`); cùng lúc **Đầu `3` (`31d`)**, **Đầu `4` (`20d`)** và **Đuôi `7` (`18d`)** là 3 trục Đầu/Đuôi gan lâu nhất.
+### 🎯 Trục #2: Nhóm Tổng Gan Sâu Có Cầu Hỗ Trợ $\rightarrow$ **TỔNG 0** (`21d`, `2` cầu `3d`) & **TỔNG 8** (`17d`, cầu `3d`)
+* **Tổng `0`** gan cao nhất toàn bảng (`21` ngày) và hội tụ **2 cầu Tổng `3d`** cùng đạt hiệu suất cao nhất nhóm (`39/324`, `12.0%`).
+* **Tổng `8`** đang gan Top 2 (`17` ngày), có `5/46` kỳ Thứ Năm và 1 cầu `3d` hỗ trợ `(G2.2[2]+G3.4[4])%10`.
+* **Lưu ý Chạm:** Cầu Chạm nổi bật nhất sau `25/11` là **Chạm `1`** (cầu thông `6d` `(G2.2[2]+G7.4[0])%10` + cầu `5d`), **Chạm `0`** (cầu `5d` `77/324` + cầu `4d`) và **Chạm `2`** (cầu `4d` `76/324` + cầu 1 vị trí `G3.5[4]` `11/30d`); cùng lúc **Đầu `3` (`32d`)**, **Đầu `4` (`21d`)** và **Đuôi `7` (`19d`)** tiếp tục là 3 trục Đầu/Đuôi gan lâu nhất.
